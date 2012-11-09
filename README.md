@@ -34,7 +34,7 @@ Tasks
 Note
 ----
 
-As always, stick to PEP8 guidelines and follow Django's documentation for its [template language][4].
+As always, stick to PEP8 guidelines and follow Django's documentation for its [template language][4]. Due to privacy concerns, the sample ZIP file for testing `perl/om-xml.pl` is only available via email.
 
 [1]: http://www.trendminer-project.eu/
 [2]: http://www.dfki.de/accurat-showcase/
