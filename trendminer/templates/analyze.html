@@ -4,7 +4,7 @@
   <div class="page-header">
     <h1>TrendMiner Showcase <small>Upload your data (zip format)...</small></h1>
   </div>
-  <form class="form-horizontal" method="post" action="{% url trendminer.views.analyze %}">
+  <form class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url trendminer.views.analyze %}">
   {% csrf_token %}
 
   <fieldset class="form-horizontal">
