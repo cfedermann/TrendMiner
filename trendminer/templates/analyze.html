@@ -1,1 +1,33 @@
 {% extends "base.html" %}
+
+{% block content %}
+  <div class="page-header">
+    <h1>TrendMiner Showcase <small>Upload your data (zip format)...</small></h1>
+  </div>
+  <form class="form-horizontal" method="post" action="{% url trendminer.views.analyze %}">
+  {% csrf_token %}
+
+  <fieldset class="form-horizontal">
+    {% for field in form %}
+    <div class="control-group">
+      <label class="control-label" for="{{field.auto_id}}">{{field.label}}</label>
+      <div class="controls">{{field}}{% if field.help_text %}<p class="help-block">{{field.help_text}}</p>{% endif %}</div>
+    </div>
+    {% endfor %}
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </div>
+
+  </fieldset>
+
+  </form>
+
+  {% if result %}
+  <fieldset>
+    <legend>Your Results</legend>
+    {{ result|linebreaksbr }}
+  </fieldset>
+  {% endif %}
+
+{% endblock %}

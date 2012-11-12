@@ -9,6 +9,7 @@ from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 
 from trendminer.settings import COMMIT_TAG
+from trendminer.forms import UploadForm
 
 
 def home(request):
@@ -47,9 +48,18 @@ def logout(request, next_page):
 
 @login_required
 def analyze(request):
+    if request.method == 'POST':
+        form = UploadForm(request.POST)
+        result = 'Your request went through!'
+    else:
+        form = UploadForm()
+        result = None
+
     dictionary = {
         'title': 'Trendminer Web Services',
         'commit_tag': COMMIT_TAG,
+        'form': form,
+        'result': result,
         }
     return render_to_response(
         "analyze.html", dictionary,
