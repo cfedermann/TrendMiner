@@ -12,12 +12,14 @@ from django.conf.urls.defaults import include, patterns, url
 urlpatterns = patterns('',
     # Examples:
     url(r'^$', 'trendminer.views.home', name='home'),
+
     (r'^login/$', 'trendminer.views.login',
       {'template_name': 'login.html'}),
 
     (r'^logout/$', 'trendminer.views.logout',
       {'next_page': '/'}),
 
+    url(r'^analyze/$', 'trendminer.views.analyze', name='analyze'),
 
     # url(r'^trendminer/', include('trendminer.foo.urls')),
 

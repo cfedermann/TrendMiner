@@ -43,3 +43,13 @@ def logout(request, next_page):
     Renders logout view by connecting to django.contrib.auth.views.
     """
     return _logout(request, next_page)
+
+
+@login_required
+def analyze(request):
+    dictionary = {
+        'title': 'Trendminer Web Services',
+        }
+    return render_to_response(
+        "analyze.html", dictionary,
+        context_instance=RequestContext(request))
