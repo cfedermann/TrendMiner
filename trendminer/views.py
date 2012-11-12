@@ -49,6 +49,7 @@ def logout(request, next_page):
 def analyze(request):
     dictionary = {
         'title': 'Trendminer Web Services',
+        'commit_tag': COMMIT_TAG,
         }
     return render_to_response(
         "analyze.html", dictionary,
