@@ -3,8 +3,9 @@ Project: TrendMiner Demo Web Services
 Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
+import subprocess
+
 from os import path
-from subprocess import Popen
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -81,7 +82,8 @@ def _analyze(data):
     archive.extractall('/tmp/{0}'.format(folder_name))
     command = 'perl -I {0} {1}'.format(
         PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
-    Popen(command, cwd='/tmp/{0}'.format(folder_name), shell=True)
+    subprocess.call(
+        command, cwd='/tmp/{0}'.format(folder_name), shell=True)
     # Parse XML and serialize entities
     result = open(path.join('/tmp', folder_name, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
