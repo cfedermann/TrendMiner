@@ -56,16 +56,16 @@ def analyze(request):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            result = _analyze(request.FILES['data'])
+            entities = _analyze(request.FILES['data'])
     else:
         form = UploadForm()
-        result = None
+        entities = []
 
     dictionary = {
         'title': 'Trendminer Web Services',
         'commit_tag': COMMIT_TAG,
         'form': form,
-        'result': result,
+        'entities': entities,
         }
     return render_to_response(
         "analyze.html", dictionary,
@@ -85,8 +85,7 @@ def _analyze(data):
     # Parse XML and serialize entities
     result = open(path.join('/tmp', folder_name, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
-    entities = [
+    entities = sorted([
         (entity.find('name').text, entity.find('polarity').text) for
-        entity in result_tree]
-    return 'Your request went through! File name: {0}, Entities: {1}'.format(
-        data.name, entities)
+        entity in result_tree])
+    return entities
