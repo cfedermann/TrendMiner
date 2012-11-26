@@ -74,16 +74,16 @@ def analyze(request):
 
 
 def _analyze(data):
-    with open('/tmp/{0}'.format(data.name), 'w') as destination:
+    with open(path.join('/tmp', data.name), 'w') as destination:
         for chunk in data.chunks():
             destination.write(chunk)
-    archive = ZipFile('/tmp/{0}'.format(data.name), 'r')
+    archive = ZipFile(path.join('/tmp', data.name), 'r')
     folder_name = path.splitext(data.name)[0]
-    archive.extractall('/tmp/{0}'.format(folder_name))
+    archive.extractall(path.join('/tmp', folder_name))
     command = 'perl -I {0} {1}'.format(
         PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
     subprocess.call(
-        command, cwd='/tmp/{0}'.format(folder_name), shell=True)
+        command, cwd=path.join('/tmp', folder_name), shell=True)
     # Parse XML and serialize entities
     result = open(path.join('/tmp', folder_name, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
