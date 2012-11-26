@@ -3,12 +3,16 @@ Project: TrendMiner Demo Web Services
 Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
+from os import path
+from subprocess import Popen
+from zipfile import ZipFile
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as _login, logout as _logout
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 
-from trendminer.settings import COMMIT_TAG
+from trendminer.settings import COMMIT_TAG, PERL_PATH
 from trendminer.forms import UploadForm
 
 
@@ -49,8 +53,9 @@ def logout(request, next_page):
 @login_required
 def analyze(request):
     if request.method == 'POST':
-        form = UploadForm(request.POST)
-        result = 'Your request went through!'
+        form = UploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            result = _analyze(request.FILES['data'])
     else:
         form = UploadForm()
         result = None
@@ -64,3 +69,16 @@ def analyze(request):
     return render_to_response(
         "analyze.html", dictionary,
         context_instance=RequestContext(request))
+
+
+def _analyze(data):
+    with open('/tmp/{0}'.format(data.name), 'w') as destination:
+        for chunk in data.chunks():
+            destination.write(chunk)
+    archive = ZipFile('/tmp/{0}'.format(data.name), 'r')
+    folder_name = path.splitext(data.name)[0]
+    archive.extractall('/tmp/{0}'.format(folder_name))
+    command = 'perl -I {0} {1}'.format(
+        PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
+    Popen(command, cwd='/tmp/{0}'.format(folder_name), shell=True)
+    return 'Your request went through! File name: {0}'.format(data.name)

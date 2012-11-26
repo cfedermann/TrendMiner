@@ -3,10 +3,11 @@ Project: TrendMiner Demo Web Services
 Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <t.krones@coli.uni-saarland.de>
 """
-from os import getcwd
+from os import getcwd, path
 from subprocess import check_output
 
 ROOT_PATH = getcwd()
+PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 
 try:
     commit_log = check_output(['git', 'log', '--pretty=oneline'])
