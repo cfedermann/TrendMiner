@@ -5,6 +5,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from os import path
 from subprocess import Popen
+from xml.etree import ElementTree
 from zipfile import ZipFile
 
 from django.contrib.auth.decorators import login_required
@@ -81,4 +82,11 @@ def _analyze(data):
     command = 'perl -I {0} {1}'.format(
         PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
     Popen(command, cwd='/tmp/{0}'.format(folder_name), shell=True)
-    return 'Your request went through! File name: {0}'.format(data.name)
+    # Parse XML and serialize entities
+    result = open(path.join('/tmp', folder_name, 'om.xml')).read()
+    result_tree = ElementTree.fromstring(result)
+    entities = [
+        (entity.find('name').text, entity.find('polarity').text) for
+        entity in result_tree]
+    return 'Your request went through! File name: {0}, Entities: {1}'.format(
+        data.name, entities)
