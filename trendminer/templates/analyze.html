@@ -48,6 +48,36 @@
       </tbody>
     </table>
   </fieldset>
+
+  <fieldset>
+    <legend>Raw output</legend>
+    <div class="accordion" id="accordion2">
+      <div class="accordion-group">
+	<div class="accordion-heading">
+	  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
+	    om.xml
+	  </a>
+	</div>
+	<div id="collapseOne" class="accordion-body collapse">
+	  <div class="accordion-inner">
+	    <pre class="pre-scrollable">{{ result|escape }}</pre>
+	  </div>
+	</div>
+      </div>
+      <div class="accordion-group">
+	<div class="accordion-heading">
+	  <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+	    pol-string.txt
+	  </a>
+	</div>
+	<div id="collapseTwo" class="accordion-body collapse">
+	  <div class="accordion-inner">
+	    <pre>{{ add_info|escape }}</pre>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </fieldset>
   {% endif %}
 
 {% endblock %}

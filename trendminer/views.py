@@ -57,16 +57,20 @@ def analyze(request):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            entities = _analyze(request.FILES['data'])
+            result, entities, add_info = _analyze(request.FILES['data'])
     else:
         form = UploadForm()
+        result = None
         entities = []
+        add_info = None
 
     dictionary = {
         'title': 'Trendminer Web Services',
         'commit_tag': COMMIT_TAG,
         'form': form,
+        'result': result,
         'entities': entities,
+        'add_info': add_info,
         }
     return render_to_response(
         "analyze.html", dictionary,
@@ -93,4 +97,6 @@ def _analyze(data):
          entity.find('ticker_string').text,
          entity.find('polarity').text)
         for entity in result_tree])
-    return entities
+    add_info = open(
+        path.join('/tmp', folder_name, 'pol_string.txt')).read()
+    return result, entities, add_info
