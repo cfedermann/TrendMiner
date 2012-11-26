@@ -86,6 +86,9 @@ def _analyze(data):
     result = open(path.join('/tmp', folder_name, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
     entities = sorted([
-        (entity.find('name').text, entity.find('polarity').text) for
-        entity in result_tree])
+        (entity.find('name').text,
+         entity.find('source_title').text,
+         entity.find('ticker_string').text,
+         entity.find('polarity').text)
+        for entity in result_tree])
     return entities
