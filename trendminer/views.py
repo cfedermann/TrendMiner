@@ -53,11 +53,11 @@ def logout(request, next_page):
 
 
 @login_required
-def analyze(request):
+def analyse(request):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            result, entities, add_info = _analyze(request.FILES['data'])
+            result, entities, add_info = _analyse(request.FILES['data'])
     else:
         form = UploadForm()
         result = None
@@ -73,11 +73,11 @@ def analyze(request):
         'add_info': add_info,
         }
     return render_to_response(
-        "analyze.html", dictionary,
+        "analyse.html", dictionary,
         context_instance=RequestContext(request))
 
 
-def _analyze(data):
+def _analyse(data):
     with open(path.join('/tmp', data.name), 'w') as destination:
         for chunk in data.chunks():
             destination.write(chunk)

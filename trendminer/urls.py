@@ -19,7 +19,7 @@ urlpatterns = patterns('',
     (r'^logout/$', 'trendminer.views.logout',
       {'next_page': '/'}),
 
-    url(r'^analyze/$', 'trendminer.views.analyze', name='analyze'),
+    url(r'^analyse/$', 'trendminer.views.analyse', name='analyse'),
 
     # url(r'^trendminer/', include('trendminer.foo.urls')),
 
