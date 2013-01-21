@@ -1,5 +1,10 @@
+# Files
 *~
+*.db
 *.log
 *.pot
 *.pyc
 local_settings.py
+
+# Directories
+screenshots/
