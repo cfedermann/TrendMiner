@@ -10,6 +10,8 @@ ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 
 MAX_UPLOAD_SIZE = 5 * (1024 ** 2) # 5MB
+ZIP_MIME_TYPES = ('application/zip',)
+XML_MIME_TYPES = ('application/xml', 'text/plain',)
 
 try:
     commit_log = check_output(['git', 'log', '--pretty=oneline'])
