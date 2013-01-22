@@ -9,6 +9,8 @@ from subprocess import check_output
 ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 
+MAX_UPLOAD_SIZE = 5 * (1024 ** 2) # 5MB
+
 try:
     commit_log = check_output(['git', 'log', '--pretty=oneline'])
     # pylint: disable-msg=E1103

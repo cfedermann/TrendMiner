@@ -5,8 +5,8 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from django import forms
 
-from trendminer.validators import validate_zip_format
+from trendminer.validators import validate_zip_format, validate_size
 
 class UploadForm(forms.Form):
     data = forms.FileField(
-        validators=[validate_zip_format])
+        validators=[validate_zip_format, validate_size])
