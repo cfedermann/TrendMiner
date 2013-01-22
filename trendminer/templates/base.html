@@ -74,6 +74,21 @@
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-transition.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
+    <script type="text/javascript">
+      $(document).ready(function() {
+	$('div.controls input:first').bind('change', function() {
+	  var fileSize = this.files[0].size;
+	  if (fileSize > 5242880) {
+	    $('span.help-inline').text('File is too large. Please select a different file.');
+	    $('button.btn').attr('disabled', 'disabled');
+	  }
+	  else {
+	    $('span.help-inline').text('File size is within limits.');
+	    $('button.btn').removeAttr('disabled');
+	  }
+	});
+      });
+    </script>
     {% block javascript %}{% endblock%}
 
   </body>
