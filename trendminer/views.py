@@ -58,11 +58,16 @@ def analyse(request):
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             result, entities, add_info = _analyse(request.FILES['data'])
+            message = 'Success!'
+        else:
+            result, entities, add_info = None, [], None
+            message = form.errors['data']
     else:
         form = UploadForm()
         result = None
         entities = []
         add_info = None
+        message = None
 
     dictionary = {
         'title': 'Trendminer Web Services',
@@ -71,6 +76,7 @@ def analyse(request):
         'result': result,
         'entities': entities,
         'add_info': add_info,
+        'message': message,
         }
     return render_to_response(
         "analyse.html", dictionary,
