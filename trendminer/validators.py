@@ -8,6 +8,7 @@ import re
 import subprocess
 
 from os import path
+from zipfile import ZipFile
 from django.core.exceptions import ValidationError
 from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
 
@@ -44,3 +45,16 @@ def validate_mime_type(uploaded_file):
         raise ValidationError(
             'File appears to be in .xml format, but it is not ' \
                 '(MIME-type: {}).'.format(mime_type))
+
+def validate_zip_integrity(uploaded_file):
+    sanitized_file_name = re.sub(
+        '[\(\)\[\]]', '', uploaded_file.name.lower().replace(' ', '_'))
+    if sanitized_file_name.endswith('zip'):
+        try:
+            archive = ZipFile(path.join('/tmp', sanitized_file_name))
+            corrupted_files = archive.testzip()
+        except IOError:
+            raise ValidationError(
+                'Archive is corrupted')
+        if corrupted_files:
+            raise ValidationError('Archive contains corrupted files')
