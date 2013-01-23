@@ -80,10 +80,12 @@
 	  var fileSize = this.files[0].size;
 	  if (fileSize > 5242880) {
 	    $('span.help-inline').text('File is too large. Please select a different file.');
+            $('div.control-group').addClass('error');
 	    $('button.btn').attr('disabled', 'disabled');
 	  }
 	  else {
 	    $('span.help-inline').text('File size is within limits.');
+            $('div.control-group').addClass('info');
 	    $('button.btn').removeAttr('disabled');
 	  }
 	});
