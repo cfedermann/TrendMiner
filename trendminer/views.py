@@ -16,6 +16,7 @@ from django.template import RequestContext
 
 from trendminer.settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
 from trendminer.forms import UploadForm
+from trendminer.utils import write_file
 
 
 def home(request):
@@ -85,11 +86,11 @@ def analyse(request):
 
 
 def _analyse(data):
-    with open(path.join('/tmp', data.name), 'w') as destination:
-        for chunk in data.chunks():
-            destination.write(chunk)
-    archive = ZipFile(path.join('/tmp', data.name), 'r')
-    folder_name = path.splitext(data.name)[0]
+    file_path = path.join('/tmp', data.name)
+    if not path.exists(file_path):
+        write_file(data)
+    archive = ZipFile(file_path, 'r')
+    folder_name = path.splitext(file_path)[0]
     archive.extractall(path.join('/tmp', folder_name))
     command = 'perl -I {0} {1}'.format(
         PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))

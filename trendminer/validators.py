@@ -13,7 +13,7 @@ from zipfile import ZipFile
 from django.core.exceptions import ValidationError
 
 from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
-from utils import sanitize_file_name
+from utils import sanitize_file_name, write_file
 
 
 def validate_extension(uploaded_file):
@@ -30,9 +30,7 @@ def validate_size(uploaded_file):
 
 def validate_mime_type(uploaded_file):
     sanitized_file_name = sanitize_file_name(uploaded_file.name)
-    with open(path.join('/tmp', sanitized_file_name), 'w') as destination:
-        for chunk in uploaded_file.chunks():
-            destination.write(chunk)
+    write_file(uploaded_file, path.join('/tmp', sanitized_file_name))
     subproc = subprocess.Popen(
         'file --mime-type {}'.format(
             path.join('/tmp', sanitized_file_name)),
