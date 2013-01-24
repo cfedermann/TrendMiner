@@ -69,7 +69,7 @@ def validate_zip_contents(uploaded_file):
     contents = []
     if sanitized_file_name.endswith('zip'):
         try:
-            archive = ZipFile(path.join('/tmp', sanitized_file_name), 'r')
+            archive = ZipFile(path.join('/tmp', sanitized_file_name))
             contents = archive.namelist()
         except (IOError, BadZipFile):
             pass
