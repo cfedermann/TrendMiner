@@ -7,7 +7,6 @@ import subprocess
 
 from os import path
 from xml.etree import ElementTree
-from zipfile import ZipFile
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as _login, logout as _logout
@@ -16,7 +15,7 @@ from django.template import RequestContext
 
 from trendminer.settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
 from trendminer.forms import UploadForm
-from trendminer.utils import write_file
+from trendminer.utils import extract_archive, write_file
 
 
 def home(request):
@@ -89,9 +88,7 @@ def _analyse(data):
     file_path = path.join('/tmp', data.name)
     if not path.exists(file_path):
         write_file(data)
-    archive = ZipFile(file_path, 'r')
-    folder_name = path.splitext(file_path)[0]
-    archive.extractall(path.join('/tmp', folder_name))
+    folder_name = extract_archive(file_path)
     command = 'perl -I {0} {1}'.format(
         PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
     subprocess.call(
