@@ -9,9 +9,12 @@ import subprocess
 from os import path
 from zipfile import error as BadZipFile
 from zipfile import ZipFile
+
 from django.core.exceptions import ValidationError
+
 from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
 from utils import sanitize_file_name
+
 
 def validate_extension(uploaded_file):
     if not (uploaded_file.name.lower().endswith('zip') or
