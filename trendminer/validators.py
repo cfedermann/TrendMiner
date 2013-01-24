@@ -58,6 +58,8 @@ def validate_zip_integrity(uploaded_file):
             raise ValidationError(
                 'Archive is corrupted')
         if corrupted_files:
+        except BadZipFile:
+            pass
             raise ValidationError('Archive contains corrupted files')
 
 def validate_zip_contents(uploaded_file):
