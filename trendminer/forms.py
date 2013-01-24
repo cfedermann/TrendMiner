@@ -5,6 +5,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from django import forms
 
+from trendminer.utils import sanitize_file_name
 from trendminer.validators import validate_extension, validate_size
 from trendminer.validators import validate_mime_type, validate_zip_integrity
 from trendminer.validators import validate_zip_contents
@@ -15,3 +16,8 @@ class UploadForm(forms.Form):
             validate_extension, validate_size,
             validate_mime_type, validate_zip_integrity,
             validate_zip_contents])
+
+    def clean_data(self):
+        data = self.cleaned_data['data']
+        data.name = sanitize_file_name(data.name)
+        return data
