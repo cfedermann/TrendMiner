@@ -13,7 +13,7 @@ from zipfile import ZipFile
 from django.core.exceptions import ValidationError
 from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
 
-def validate_zip_format(uploaded_file):
+def validate_extension(uploaded_file):
     if not (uploaded_file.name.lower().endswith('zip') or
             uploaded_file.name.lower().endswith('xml')):
         raise ValidationError(
