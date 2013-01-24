@@ -14,7 +14,7 @@ from django.contrib.auth.views import login as _login, logout as _logout
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 
-from trendminer.settings import COMMIT_TAG, PERL_PATH
+from trendminer.settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
 from trendminer.forms import UploadForm
 
 
@@ -72,6 +72,7 @@ def analyse(request):
     dictionary = {
         'title': 'Trendminer Web Services',
         'commit_tag': COMMIT_TAG,
+        'max_upload_size': MAX_UPLOAD_SIZE / (1024**2),
         'form': form,
         'result': result,
         'entities': entities,

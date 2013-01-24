@@ -112,7 +112,7 @@
           if ($('div.control-group').hasClass('info')) {
             $('div.control-group').removeClass('info');
           }
-          $('span.help-inline').text('File is too large. Please select a different file.');
+          $('span.help-inline').text('File is too large. The current limit is ' + {{ max_upload_size }} + 'MB.');
           $('div.control-group').addClass('error');
           $('button.btn').attr('disabled', 'disabled');
         }
