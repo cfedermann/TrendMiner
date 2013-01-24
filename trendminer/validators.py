@@ -51,15 +51,16 @@ def validate_zip_integrity(uploaded_file):
     sanitized_file_name = re.sub(
         '[\(\)\[\]]', '', uploaded_file.name.lower().replace(' ', '_'))
     if sanitized_file_name.endswith('zip'):
+        corrupted_file = None
         try:
             archive = ZipFile(path.join('/tmp', sanitized_file_name))
-            corrupted_files = archive.testzip()
+            corrupted_file = archive.testzip()
         except IOError:
             raise ValidationError(
                 'Archive is corrupted')
-        if corrupted_files:
         except BadZipFile:
             pass
+        if corrupted_file:
             raise ValidationError('Archive contains corrupted files')
 
 def validate_zip_contents(uploaded_file):
