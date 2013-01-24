@@ -30,22 +30,22 @@ def validate_size(uploaded_file):
 
 def validate_mime_type(uploaded_file):
     sanitized_file_name = sanitize_file_name(uploaded_file.name)
-    write_file(uploaded_file, path.join('/tmp', sanitized_file_name))
-    subproc = subprocess.Popen(
-        'file --mime-type {}'.format(
-            path.join('/tmp', sanitized_file_name)),
-        shell=True, stdout=subprocess.PIPE)
-    mime_type = subproc.stdout.read().strip().split(': ')[-1]
-    if sanitized_file_name.endswith('zip') and not \
-            mime_type in ZIP_MIME_TYPES:
-        raise ValidationError(
-            'File appears to be in .zip format, but it is not ' \
-                '(MIME-type: {}).'.format(mime_type))
-    elif sanitized_file_name.endswith('xml') and not \
-            mime_type in XML_MIME_TYPES:
-        raise ValidationError(
-            'File appears to be in .xml format, but it is not ' \
-                '(MIME-type: {}).'.format(mime_type))
+    file_extension = path.splitext(sanitized_file_name)[1]
+    if file_extension == '.zip' or file_extension == '.xml':
+        write_file(uploaded_file, path.join('/tmp', sanitized_file_name))
+        subproc = subprocess.Popen(
+            'file --mime-type {}'.format(
+                path.join('/tmp', sanitized_file_name)),
+            shell=True, stdout=subprocess.PIPE)
+        mime_type = subproc.stdout.read().strip().split(': ')[-1]
+        if file_extension == '.zip' and not mime_type in ZIP_MIME_TYPES:
+            raise ValidationError(
+                'File appears to be in .zip format, but it is not ' \
+                    '(MIME-type: {}).'.format(mime_type))
+        elif file_extension == '.xml' and not mime_type in XML_MIME_TYPES:
+            raise ValidationError(
+                'File appears to be in .xml format, but it is not ' \
+                    '(MIME-type: {}).'.format(mime_type))
 
 def validate_zip_integrity(uploaded_file):
     sanitized_file_name = sanitize_file_name(uploaded_file.name)
