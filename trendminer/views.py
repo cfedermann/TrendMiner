@@ -88,7 +88,7 @@ def _analyse(data):
     file_path = path.join('/tmp', data.name)
     file_type = path.splitext(file_path)[1]
     if not path.exists(file_path):
-        write_file(data)
+        write_file(data, file_path)
     if file_type == '.zip':
         folder_name = extract_archive(file_path)
         command = 'perl -I {0} {1}'.format(
