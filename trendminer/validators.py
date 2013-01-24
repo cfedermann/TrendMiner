@@ -4,7 +4,6 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
 
-import re
 import subprocess
 
 from os import path
@@ -12,6 +11,7 @@ from zipfile import error as BadZipFile
 from zipfile import ZipFile
 from django.core.exceptions import ValidationError
 from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
+from utils import sanitize_file_name
 
 def validate_extension(uploaded_file):
     if not (uploaded_file.name.lower().endswith('zip') or
@@ -26,8 +26,7 @@ def validate_size(uploaded_file):
                 MAX_UPLOAD_SIZE/(1024**2)))
 
 def validate_mime_type(uploaded_file):
-    sanitized_file_name = re.sub(
-        '[\(\)\[\]]', '', uploaded_file.name.lower().replace(' ', '_'))
+    sanitized_file_name = sanitize_file_name(uploaded_file.name)
     with open(path.join('/tmp', sanitized_file_name), 'w') as destination:
         for chunk in uploaded_file.chunks():
             destination.write(chunk)
@@ -48,8 +47,7 @@ def validate_mime_type(uploaded_file):
                 '(MIME-type: {}).'.format(mime_type))
 
 def validate_zip_integrity(uploaded_file):
-    sanitized_file_name = re.sub(
-        '[\(\)\[\]]', '', uploaded_file.name.lower().replace(' ', '_'))
+    sanitized_file_name = sanitize_file_name(uploaded_file.name)
     if sanitized_file_name.endswith('zip'):
         corrupted_file = None
         try:
@@ -64,8 +62,7 @@ def validate_zip_integrity(uploaded_file):
             raise ValidationError('Archive contains corrupted files')
 
 def validate_zip_contents(uploaded_file):
-    sanitized_file_name = re.sub(
-        '[\(\)\[\]]', '', uploaded_file.name.lower().replace(' ', '_'))
+    sanitized_file_name = sanitize_file_name(uploaded_file.name)
     contents = []
     if sanitized_file_name.endswith('zip'):
         try:
