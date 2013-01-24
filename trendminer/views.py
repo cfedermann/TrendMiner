@@ -86,22 +86,26 @@ def analyse(request):
 
 def _analyse(data):
     file_path = path.join('/tmp', data.name)
+    file_type = path.splitext(file_path)[1]
     if not path.exists(file_path):
         write_file(data)
-    folder_name = extract_archive(file_path)
-    command = 'perl -I {0} {1}'.format(
-        PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
-    subprocess.call(
-        command, cwd=path.join('/tmp', folder_name), shell=True)
-    # Parse XML and serialize entities
-    result = open(path.join('/tmp', folder_name, 'om.xml')).read()
-    result_tree = ElementTree.fromstring(result)
-    entities = sorted([
-        (entity.find('name').text,
-         entity.find('source_title').text,
-         entity.find('ticker_string').text,
-         entity.find('polarity').text)
-        for entity in result_tree])
-    add_info = open(
-        path.join('/tmp', folder_name, 'pol_string.txt')).read()
+    if file_type == '.zip':
+        folder_name = extract_archive(file_path)
+        command = 'perl -I {0} {1}'.format(
+            PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
+        subprocess.call(
+            command, cwd=path.join('/tmp', folder_name), shell=True)
+        # Parse XML and serialize entities
+        result = open(path.join('/tmp', folder_name, 'om.xml')).read()
+        result_tree = ElementTree.fromstring(result)
+        entities = sorted([
+                (entity.find('name').text,
+                 entity.find('source_title').text,
+                 entity.find('ticker_string').text,
+                 entity.find('polarity').text)
+                for entity in result_tree])
+        add_info = open(
+            path.join('/tmp', folder_name, 'pol_string.txt')).read()
+    elif file_type == '.xml':
+        result, entities, add_info = None, [], None
     return result, entities, add_info
