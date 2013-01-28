@@ -88,20 +88,18 @@ def validate_xml_well_formedness(uploaded_file):
         except (IOError, BadZipFile):
             return
         for file_name in listdir(path.join('/tmp', folder_name)):
-            sanitized_file_name = sanitize_file_name(file_name)
-            if sanitized_file_name.endswith('.xml'):
-                subproc = subprocess.Popen(
-                    'xmlwf {}'.format(
-                        path.join('/tmp', folder_name, sanitized_file_name)),
-                    shell=True, stdout=subprocess.PIPE)
+            if file_name.endswith('.xml') and not file_name == 'om.xml':
+                command = shlex.split('xmlwf "{}"'.format(
+                        path.join('/tmp', folder_name, file_name)))
+                subproc = subprocess.Popen(command, stdout=subprocess.PIPE)
                 error_msg = subproc.stdout.read()
                 if error_msg:
                     raise ValidationError(
                         'Archive contains XML files that are not ' \
                             'well-formed')
     elif file_type == '.xml':
-        subproc = subprocess.Popen(
-            'xmlwf {}'.format(file_path), shell=True, stdout=subprocess.PIPE)
+        command = shlex.split('xmlwf "{}"'.format(file_path))
+        subproc = subprocess.Popen(command, stdout=subprocess.PIPE)
         error_msg = subproc.stdout.read()
         if error_msg:
             raise ValidationError('XML file is not well-formed')
