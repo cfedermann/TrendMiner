@@ -4,6 +4,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
 
+import shlex
 import subprocess
 
 from os import listdir, path
@@ -12,7 +13,8 @@ from zipfile import ZipFile
 
 from django.core.exceptions import ValidationError
 
-from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
+from settings import MAX_UPLOAD_SIZE, SCHEMA_PATH, XML_MIME_TYPES
+from settings import ZIP_MIME_TYPES
 from utils import extract_archive, sanitize_file_name, write_file
 
 
@@ -103,3 +105,34 @@ def validate_xml_well_formedness(uploaded_file):
         error_msg = subproc.stdout.read()
         if error_msg:
             raise ValidationError('XML file is not well-formed')
+
+def validate_against_schema(uploaded_file):
+    file_path = path.join('/tmp', sanitize_file_name(uploaded_file.name))
+    file_type = path.splitext(file_path)[1]
+    if file_type in ('.zip', '.xml') and not path.exists(file_path):
+        write_file(uploaded_file, file_path)
+    if file_type == '.zip':
+        try:
+            folder_name = extract_archive(file_path)
+        except (IOError, BadZipFile):
+            return
+        for file_name in listdir(path.join('/tmp', folder_name)):
+            if file_name.endswith('.xml') and not file_name == 'om.xml':
+                command = shlex.split(
+                    'xmllint --noout --schema "{0}" "{1}"'.format(
+                        SCHEMA_PATH,
+                        path.join('/tmp/', folder_name, file_name)))
+                subproc = subprocess.Popen(command)
+                returncode = subproc.wait()
+                if not returncode == 0:
+                    raise ValidationError(
+                        'Archive contains XML files that do not ' \
+                            'validate against the TrendMiner XML schema')
+    elif file_type == '.xml':
+        command = shlex.split(
+            'xmllint --noout --schema "{0}" "{1}"'.format(
+                SCHEMA_PATH, file_path))
+        subproc = subprocess.Popen(command)
+        if not subproc.wait() == 0:
+            raise ValidationError(
+                'XML file does not validate against TrendMiner XML Schema')
