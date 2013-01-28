@@ -6,14 +6,14 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 
 import subprocess
 
-from os import path
+from os import listdir, path
 from zipfile import error as BadZipFile
 from zipfile import ZipFile
 
 from django.core.exceptions import ValidationError
 
 from settings import MAX_UPLOAD_SIZE, XML_MIME_TYPES, ZIP_MIME_TYPES
-from utils import sanitize_file_name, write_file
+from utils import extract_archive, sanitize_file_name, write_file
 
 
 def validate_extension(uploaded_file):
@@ -74,3 +74,32 @@ def validate_zip_contents(uploaded_file):
         if any(not item.endswith('xml') for item in contents):
             raise ValidationError(
                 'Archive contains files that are not in XML format')
+
+def validate_xml_well_formedness(uploaded_file):
+    file_path = path.join('/tmp', sanitize_file_name(uploaded_file.name))
+    file_type = path.splitext(file_path)[1]
+    if file_type in ('.zip', '.xml') and not path.exists(file_path):
+        write_file(uploaded_file, file_path)
+    if file_type == '.zip':
+        try:
+            folder_name = extract_archive(file_path)
+        except (IOError, BadZipFile):
+            return
+        for file_name in listdir(path.join('/tmp', folder_name)):
+            sanitized_file_name = sanitize_file_name(file_name)
+            if sanitized_file_name.endswith('.xml'):
+                subproc = subprocess.Popen(
+                    'xmlwf {}'.format(
+                        path.join('/tmp', folder_name, sanitized_file_name)),
+                    shell=True, stdout=subprocess.PIPE)
+                error_msg = subproc.stdout.read()
+                if error_msg:
+                    raise ValidationError(
+                        'Archive contains XML files that are not ' \
+                            'well-formed')
+    elif file_type == '.xml':
+        subproc = subprocess.Popen(
+            'xmlwf {}'.format(file_path), shell=True, stdout=subprocess.PIPE)
+        error_msg = subproc.stdout.read()
+        if error_msg:
+            raise ValidationError('XML file is not well-formed')
