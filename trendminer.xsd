@@ -5,10 +5,10 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element name="identificativo" type="xs:string" />
-        <xs:element name="data" type="xs:string" />
+        <xs:element name="data" type="xs:date" />
         <xs:element name="sigla" type="xs:string" />
-        <xs:element name="classe" type="xs:string" />
-        <xs:element name="dimensione" type="xs:string" />
+        <xs:element name="classe" type="xs:integer" />
+        <xs:element name="dimensione" type="xs:integer" />
         <xs:element name="titolo" type="xs:string" />
         <xs:element name="TESTATA" type="xs:string" />
         <xs:element name="SEZIONE" type="xs:string" minOccurs="0" />
