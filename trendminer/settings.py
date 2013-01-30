@@ -8,6 +8,11 @@ from subprocess import check_output
 
 ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
+SCHEMA_PATH = path.join(path.dirname(ROOT_PATH), 'trendminer.xsd')
+
+MAX_UPLOAD_SIZE = 5 * (1024 ** 2) # 5MB
+ZIP_MIME_TYPES = ('application/zip',)
+XML_MIME_TYPES = ('application/xml', 'text/plain',)
 
 try:
     commit_log = check_output(['git', 'log', '--pretty=oneline'])
