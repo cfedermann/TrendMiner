@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 
 from settings import MAX_UPLOAD_SIZE, SCHEMA_PATH, XML_MIME_TYPES
 from settings import ZIP_MIME_TYPES
-from utils import extract_archive, file_on_disk
+from utils import extract_archive, file_on_disk, get_tmp_path
 
 
 def validate_extension(uploaded_file):
@@ -33,7 +33,7 @@ def validate_size(uploaded_file):
 @file_on_disk
 def validate_mime_type(uploaded_file):
     subproc = subprocess.Popen(
-        'file --mime-type {}'.format(path.join('/tmp', uploaded_file.name)),
+        'file --mime-type {}'.format(get_tmp_path( uploaded_file.name)),
         shell=True, stdout=subprocess.PIPE)
     mime_type = subproc.stdout.read().strip().split(': ')[-1]
     file_extension = path.splitext(uploaded_file.name)[1]
@@ -51,7 +51,7 @@ def validate_zip_integrity(uploaded_file):
     if uploaded_file.name.endswith('zip'):
         corrupted_file = None
         try:
-            archive = ZipFile(path.join('/tmp', uploaded_file.name))
+            archive = ZipFile(get_tmp_path(uploaded_file.name))
             corrupted_file = archive.testzip()
         except IOError:
             raise ValidationError(
@@ -66,7 +66,7 @@ def validate_zip_contents(uploaded_file):
     contents = []
     if uploaded_file.name.endswith('zip'):
         try:
-            archive = ZipFile(path.join('/tmp', uploaded_file.name))
+            archive = ZipFile(get_tmp_path(uploaded_file.name))
             contents = archive.namelist()
         except (IOError, BadZipFile):
             pass
@@ -76,15 +76,14 @@ def validate_zip_contents(uploaded_file):
 
 @file_on_disk
 def validate_xml_well_formedness(uploaded_file):
-    file_path = path.join('/tmp', uploaded_file.name)
-    file_type = path.splitext(file_path)[1]
+    file_type = path.splitext(uploaded_file.name)[1]
     if file_type == '.zip':
-        folder_name = extract_archive(file_path)
+        folder_name = extract_archive(get_tmp_path(uploaded_file.name))
         if folder_name:
-            for file_name in listdir(path.join('/tmp', folder_name)):
+            for file_name in listdir(get_tmp_path(folder_name)):
                 if file_name.endswith('.xml') and not file_name == 'om.xml':
                     command = shlex.split('xmlwf "{}"'.format(
-                            path.join('/tmp', folder_name, file_name)))
+                            get_tmp_path(folder_name, file_name)))
                     subproc = subprocess.Popen(
                         command, stdout=subprocess.PIPE)
                     error_msg = subproc.stdout.read()
@@ -93,7 +92,8 @@ def validate_xml_well_formedness(uploaded_file):
                             'Archive contains XML files that are not ' \
                                 'well-formed')
     elif file_type == '.xml':
-        command = shlex.split('xmlwf "{}"'.format(file_path))
+        command = shlex.split('xmlwf "{}"'.format(
+                get_tmp_path(uploaded_file.name)))
         subproc = subprocess.Popen(command, stdout=subprocess.PIPE)
         error_msg = subproc.stdout.read()
         if error_msg:
@@ -101,17 +101,16 @@ def validate_xml_well_formedness(uploaded_file):
 
 @file_on_disk
 def validate_against_schema(uploaded_file):
-    file_path = path.join('/tmp', uploaded_file.name)
-    file_type = path.splitext(file_path)[1]
+    file_type = path.splitext(uploaded_file.name)[1]
     if file_type == '.zip':
-        folder_name = extract_archive(file_path)
+        folder_name = extract_archive(get_tmp_path(uploaded_file.name))
         if folder_name:
-            for file_name in listdir(path.join('/tmp', folder_name)):
+            for file_name in listdir(get_tmp_path(folder_name)):
                 if file_name.endswith('.xml') and not file_name == 'om.xml':
                     command = shlex.split(
                         'xmllint --noout --schema "{0}" "{1}"'.format(
                             SCHEMA_PATH,
-                            path.join('/tmp/', folder_name, file_name)))
+                            get_tmp_path(folder_name, file_name)))
                     subproc = subprocess.Popen(command)
                     returncode = subproc.wait()
                     if not returncode == 0:
@@ -121,7 +120,7 @@ def validate_against_schema(uploaded_file):
     elif file_type == '.xml':
         command = shlex.split(
             'xmllint --noout --schema "{0}" "{1}"'.format(
-                SCHEMA_PATH, file_path))
+                SCHEMA_PATH, get_tmp_path(uploaded_file.name)))
         subproc = subprocess.Popen(command)
         if not subproc.wait() == 0:
             raise ValidationError(
