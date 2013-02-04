@@ -8,6 +8,7 @@ import re
 
 from os import path
 from zipfile import ZipFile
+from zipfile import error as BadZipFile
 
 from settings import ACCEPTED_FILE_TYPES
 
@@ -21,9 +22,12 @@ def write_file(uploaded_file, path):
             destination.write(chunk)
 
 def extract_archive(file_path):
-    archive = ZipFile(file_path, 'r')
     folder_name = path.splitext(file_path)[0]
-    archive.extractall(path.join('/tmp', folder_name))
+    try:
+        archive = ZipFile(file_path, 'r')
+        archive.extractall(path.join('/tmp', folder_name))
+    except (IOError, BadZipFile):
+        folder_name = None
     return folder_name
 
 def file_on_disk(func):
