@@ -7,7 +7,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 import shlex
 import subprocess
 
-from os import listdir, path
+from os import listdir
 from zipfile import error as BadZipFile
 from zipfile import ZipFile
 
@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 
 from settings import MAX_UPLOAD_SIZE, SCHEMA_PATH, XML_MIME_TYPES
 from settings import ZIP_MIME_TYPES
-from utils import extract_archive, file_on_disk, get_tmp_path
+from utils import extract_archive, file_on_disk, get_file_ext, get_tmp_path
 
 
 def validate_extension(uploaded_file):
@@ -36,7 +36,7 @@ def validate_mime_type(uploaded_file):
         'file --mime-type {}'.format(get_tmp_path( uploaded_file.name)),
         shell=True, stdout=subprocess.PIPE)
     mime_type = subproc.stdout.read().strip().split(': ')[-1]
-    file_extension = path.splitext(uploaded_file.name)[1]
+    file_extension = get_file_ext(uploaded_file.name)
     if file_extension == '.zip' and not mime_type in ZIP_MIME_TYPES:
         raise ValidationError(
             'File appears to be in .zip format, but it is not ' \
@@ -76,7 +76,7 @@ def validate_zip_contents(uploaded_file):
 
 @file_on_disk
 def validate_xml_well_formedness(uploaded_file):
-    file_type = path.splitext(uploaded_file.name)[1]
+    file_type = get_file_ext(uploaded_file.name)
     if file_type == '.zip':
         folder_name = extract_archive(get_tmp_path(uploaded_file.name))
         if folder_name:
@@ -101,7 +101,7 @@ def validate_xml_well_formedness(uploaded_file):
 
 @file_on_disk
 def validate_against_schema(uploaded_file):
-    file_type = path.splitext(uploaded_file.name)[1]
+    file_type = get_file_ext(uploaded_file.name)
     if file_type == '.zip':
         folder_name = extract_archive(get_tmp_path(uploaded_file.name))
         if folder_name:

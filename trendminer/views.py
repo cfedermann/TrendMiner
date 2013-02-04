@@ -15,7 +15,8 @@ from django.template import RequestContext
 
 from trendminer.settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
 from trendminer.forms import UploadForm
-from trendminer.utils import extract_archive, file_on_disk, get_tmp_path
+from trendminer.utils import extract_archive, file_on_disk, get_file_ext
+from trendminer.utils import get_tmp_path
 
 
 def home(request):
@@ -86,7 +87,7 @@ def analyse(request):
 
 @file_on_disk
 def _analyse(data):
-    file_type = path.splitext(data.name)[1]
+    file_type = get_file_ext(data.name)
     if file_type == '.zip':
         folder_name = extract_archive(get_tmp_path(data.name))
         command = 'perl -I {0} {1}'.format(
