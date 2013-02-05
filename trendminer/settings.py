@@ -5,10 +5,12 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from os import getcwd, path
 from subprocess import check_output
+from tempfile import gettempdir
 
 ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 SCHEMA_PATH = path.join(path.dirname(ROOT_PATH), 'trendminer.xsd')
+TMP_PATH = gettempdir()
 
 MAX_UPLOAD_SIZE = 5 * (1024 ** 2) # 5MB
 ZIP_MIME_TYPES = ('application/zip',)

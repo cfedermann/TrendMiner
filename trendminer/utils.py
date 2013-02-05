@@ -10,14 +10,14 @@ from os import path
 from zipfile import ZipFile
 from zipfile import error as BadZipFile
 
-from settings import ACCEPTED_FILE_TYPES
+from settings import ACCEPTED_FILE_TYPES, TMP_PATH
 
 
 def sanitize_file_name(name):
     return re.sub('[\(\)\[\]]', '', name.lower().replace(' ', '_'))
 
 def get_tmp_path(*args):
-    return path.join('/tmp', *args)
+    return path.join(TMP_PATH, *args)
 
 def get_file_ext(file_name):
     return path.splitext(file_name)[1]
