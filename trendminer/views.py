@@ -13,10 +13,9 @@ from django.contrib.auth.views import login as _login, logout as _logout
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 
-from trendminer.settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
-from trendminer.forms import UploadForm
-from trendminer.utils import extract_archive, file_on_disk, get_file_ext
-from trendminer.utils import get_tmp_path
+from settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
+from forms import UploadForm
+from utils import extract_archive, file_on_disk, get_file_ext, get_tmp_path
 
 
 def home(request):
