@@ -47,3 +47,13 @@ def file_on_disk(func):
             write_file(uploaded_file, file_path)
         return func(*args, **kwargs)
     return wrapper
+
+def archive_extracted(func):
+    def wrapper(*args, **kwargs):
+        uploaded_file = args[0]
+        file_extension = get_file_ext(uploaded_file.name)
+        if file_extension == '.zip':
+            folder = extract_archive(get_tmp_path(uploaded_file.name))
+            uploaded_file.folder = folder
+        return func(*args, **kwargs)
+    return wrapper

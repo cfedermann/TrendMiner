@@ -7,7 +7,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 import shlex
 import subprocess
 
-from os import listdir
+from os import listdir, path
 from zipfile import error as BadZipFile
 from zipfile import ZipFile
 
@@ -15,7 +15,7 @@ from django.core.exceptions import ValidationError
 
 from settings import MAX_UPLOAD_SIZE, SCHEMA_PATH, XML_MIME_TYPES
 from settings import ZIP_MIME_TYPES
-from utils import extract_archive, file_on_disk, get_file_ext, get_tmp_path
+from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
 
 def validate_extension(uploaded_file):
@@ -74,23 +74,21 @@ def validate_zip_contents(uploaded_file):
             raise ValidationError(
                 'Archive contains files that are not in XML format')
 
+@archive_extracted
 @file_on_disk
 def validate_xml_well_formedness(uploaded_file):
     file_type = get_file_ext(uploaded_file.name)
-    if file_type == '.zip':
-        folder_name = extract_archive(get_tmp_path(uploaded_file.name))
-        if folder_name:
-            for file_name in listdir(get_tmp_path(folder_name)):
-                if file_name.endswith('.xml') and not file_name == 'om.xml':
-                    command = shlex.split('xmlwf "{}"'.format(
-                            get_tmp_path(folder_name, file_name)))
-                    subproc = subprocess.Popen(
-                        command, stdout=subprocess.PIPE)
-                    error_msg = subproc.stdout.read()
-                    if error_msg:
-                        raise ValidationError(
-                            'Archive contains XML files that are not ' \
-                                'well-formed')
+    if file_type == '.zip' and uploaded_file.folder:
+        for file_name in listdir(get_tmp_path(uploaded_file.folder)):
+            if file_name.endswith('.xml') and not file_name == 'om.xml':
+                command = shlex.split('xmlwf "{}"'.format(
+                        get_tmp_path(uploaded_file.folder, file_name)))
+                subproc = subprocess.Popen(command, stdout=subprocess.PIPE)
+                error_msg = subproc.stdout.read()
+                if error_msg:
+                    raise ValidationError(
+                        'Archive contains XML files that are not ' \
+                            'well-formed')
     elif file_type == '.xml':
         command = shlex.split('xmlwf "{}"'.format(
                 get_tmp_path(uploaded_file.name)))
@@ -99,24 +97,23 @@ def validate_xml_well_formedness(uploaded_file):
         if error_msg:
             raise ValidationError('XML file is not well-formed')
 
+@archive_extracted
 @file_on_disk
 def validate_against_schema(uploaded_file):
     file_type = get_file_ext(uploaded_file.name)
-    if file_type == '.zip':
-        folder_name = extract_archive(get_tmp_path(uploaded_file.name))
-        if folder_name:
-            for file_name in listdir(get_tmp_path(folder_name)):
-                if file_name.endswith('.xml') and not file_name == 'om.xml':
-                    command = shlex.split(
-                        'xmllint --noout --schema "{0}" "{1}"'.format(
-                            SCHEMA_PATH,
-                            get_tmp_path(folder_name, file_name)))
-                    subproc = subprocess.Popen(command)
-                    returncode = subproc.wait()
-                    if not returncode == 0:
-                        raise ValidationError(
-                            'Archive contains XML files that do not ' \
-                                'validate against the TrendMiner XML schema')
+    if file_type == '.zip' and uploaded_file.folder:
+        for file_name in listdir(get_tmp_path(uploaded_file.folder)):
+            if file_name.endswith('.xml') and not file_name == 'om.xml':
+                command = shlex.split(
+                    'xmllint --noout --schema "{0}" "{1}"'.format(
+                        SCHEMA_PATH,
+                        get_tmp_path(uploaded_file.folder, file_name)))
+                subproc = subprocess.Popen(command)
+                returncode = subproc.wait()
+                if not returncode == 0:
+                    raise ValidationError(
+                        'Archive contains XML files that do not ' \
+                            'validate against the TrendMiner XML schema')
     elif file_type == '.xml':
         command = shlex.split(
             'xmllint --noout --schema "{0}" "{1}"'.format(

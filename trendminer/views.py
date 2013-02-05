@@ -15,7 +15,7 @@ from django.template import RequestContext
 
 from settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
 from forms import UploadForm
-from utils import extract_archive, file_on_disk, get_file_ext, get_tmp_path
+from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
 
 def home(request):
@@ -84,17 +84,17 @@ def analyse(request):
         context_instance=RequestContext(request))
 
 
+@archive_extracted
 @file_on_disk
 def _analyse(data):
     file_type = get_file_ext(data.name)
     if file_type == '.zip':
-        folder_name = extract_archive(get_tmp_path(data.name))
         command = 'perl -I {0} {1}'.format(
             PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
         subprocess.call(
-            command, cwd=get_tmp_path(folder_name), shell=True)
+            command, cwd=get_tmp_path(data.folder), shell=True)
         # Parse XML and serialize entities
-        result = open(get_tmp_path(folder_name, 'om.xml')).read()
+        result = open(get_tmp_path(data.folder, 'om.xml')).read()
         result_tree = ElementTree.fromstring(result)
         entities = sorted([
                 (entity.find('name').text,
@@ -103,7 +103,7 @@ def _analyse(data):
                  entity.find('polarity').text)
                 for entity in result_tree])
         add_info = open(
-            get_tmp_path(folder_name, 'pol_string.txt')).read()
+            get_tmp_path(data.folder, 'pol_string.txt')).read()
     elif file_type == '.xml':
         result, entities, add_info = None, [], None
     return result, entities, add_info
