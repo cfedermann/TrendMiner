@@ -17,73 +17,46 @@ class ValidatorTest(TestCase):
     def tearDown(self):
         self.browser.logout()
 
-    def test_ext_validator(self):
-        with get_test_file('trendminer-logo-final.png') as testfile:
+    def __check_form_errors(self, file_name, expected_errors):
+        with get_test_file(file_name) as testfile:
             response = self.browser.post('/analyse/', {'data': testfile})
             self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.EXTENSION)
+                response, form='form', field='data', errors=expected_errors)
+
+    def test_ext_validator(self):
+        self.__check_form_errors(
+            'trendminer-logo-final.png', UploadFormErrors.EXTENSION)
 
     def test_size_validator(self):
-        with get_test_file('large.zip') as testzip:
-            response = self.browser.post('/analyse/', {'data': testzip})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.SIZE)
-        with get_test_file('large.xml') as testxml:
-            response = self.browser.post('/analyse/', {'data': testxml})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.SIZE)
+        self.__check_form_errors('large.zip', UploadFormErrors.SIZE)
+        self.__check_form_errors('large.xml', UploadFormErrors.SIZE)
 
     def test_mime_type_validator(self):
-        with get_test_file('fake.zip') as testzip:
-            response = self.browser.post('/analyse/', {'data': testzip})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.MIME_TYPE.format(
-                    '.zip', 'text/plain'))
-        with get_test_file('fake.xml') as testxml:
-            response = self.browser.post('/analyse/', {'data': testxml})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.MIME_TYPE.format(
-                    '.xml', 'application/zip'))
+        self.__check_form_errors(
+            'fake.zip', UploadFormErrors.MIME_TYPE.format(
+                '.zip', 'text/plain'))
+        self.__check_form_errors(
+            'fake.xml', UploadFormErrors.MIME_TYPE.format(
+                '.xml', 'application/zip'))
 
     def test_zip_integrity_validator(self):
-        with get_test_file('corrupt.zip') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.ZIP_INTEGRITY)
+        self.__check_form_errors(
+            'corrupt.zip', UploadFormErrors.ZIP_INTEGRITY)
 
     def test_zip_contents_validator(self):
-        with get_test_file('TrendMiner-screenshots.zip') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.ZIP_CONTENTS)
+        self.__check_form_errors(
+            'TrendMiner-screenshots.zip', UploadFormErrors.ZIP_CONTENTS)
 
     def test_xml_wf_validator(self):
-        with get_test_file('archive-with-malformed-xml.zip') as testzip:
-            response = self.browser.post('/analyse/', {'data': testzip})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.FILES_WELLFORMEDNESS)
-        with get_test_file('malformed.xml') as testxml:
-            response = self.browser.post('/analyse/', {'data': testxml})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.XML_WELLFORMEDNESS)
+        self.__check_form_errors(
+            'archive-with-malformed-xml.zip',
+            UploadFormErrors.FILES_WELLFORMEDNESS)
+        self.__check_form_errors(
+            'malformed.xml', UploadFormErrors.XML_WELLFORMEDNESS)
 
     def test_xml_schema_validator(self):
-        with get_test_file('archive-with-valid-xml.zip') as testzip:
-            response = self.browser.post('/analyse/', {'data': testzip})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.FILES_SCHEMA_CONFORMITY)
-        with get_test_file('valid.xml') as testxml:
-            response = self.browser.post('/analyse/', {'data': testxml})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.XML_SCHEMA_CONFORMITY)
+        self.__check_form_errors(
+            'archive-with-valid-xml.zip',
+            UploadFormErrors.FILES_SCHEMA_CONFORMITY)
+        self.__check_form_errors(
+            'valid.xml', UploadFormErrors.XML_SCHEMA_CONFORMITY)
