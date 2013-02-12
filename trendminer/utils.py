@@ -22,9 +22,10 @@ def get_tmp_path(*args):
 def get_file_ext(file_name):
     return path.splitext(file_name)[1]
 
-def get_test_file(file_name, flag=''):
+def get_test_file(file_name):
+    flag = 'rb' if not get_file_ext(file_name) == '.xml' else 'r'
     return open(
-        path.join(TESTFILES_PATH, file_name), flag or 'r')
+        path.join(TESTFILES_PATH, file_name), flag)
 
 def write_file(uploaded_file, path):
     with open(path, 'w') as destination:
