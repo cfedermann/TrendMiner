@@ -10,7 +10,7 @@ from os import path
 from zipfile import ZipFile
 from zipfile import error as BadZipFile
 
-from settings import ACCEPTED_FILE_TYPES, TMP_PATH
+from settings import ACCEPTED_FILE_TYPES, TESTFILES_PATH, TMP_PATH
 
 
 def sanitize_file_name(name):
@@ -21,6 +21,10 @@ def get_tmp_path(*args):
 
 def get_file_ext(file_name):
     return path.splitext(file_name)[1]
+
+def get_test_file(file_name, flag=''):
+    return open(
+        path.join(TESTFILES_PATH, file_name), flag or 'r')
 
 def write_file(uploaded_file, path):
     with open(path, 'w') as destination:
