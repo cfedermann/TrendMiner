@@ -11,6 +11,7 @@ ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 SCHEMA_PATH = path.join(path.dirname(ROOT_PATH), 'trendminer.xsd')
 TMP_PATH = gettempdir()
+TESTFILES_PATH = path.join(path.dirname(ROOT_PATH), 'testfiles')
 
 MAX_UPLOAD_SIZE = 5 * (1024 ** 2) # 5MB
 ZIP_MIME_TYPES = ('application/zip',)
