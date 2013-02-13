@@ -60,3 +60,11 @@ class ValidatorTest(TestCase):
             UploadFormErrors.FILES_SCHEMA_CONFORMITY)
         self.__check_form_errors(
             'valid.xml', UploadFormErrors.XML_SCHEMA_CONFORMITY)
+
+    def test_successful_cases(self):
+        with get_test_file('reputation_test3.zip') as testzip:
+            response = self.browser.post('/analyse/', {'data': testzip})
+            self.assertContains(response, 'Success!')
+        with get_test_file('RR2009042290839-only-quant.xml') as testxml:
+            response = self.browser.post('/analyse/', {'data': testxml})
+            self.assertContains(response, 'Success!')
