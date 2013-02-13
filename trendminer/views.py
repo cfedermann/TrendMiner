@@ -57,16 +57,14 @@ def analyse(request):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            result, entities, add_info = _analyse(request.FILES['data'])
+            entities = _analyse(request.FILES['data'])
             message = 'Success!'
         else:
-            result, entities, add_info = None, [], None
+            entities = []
             message = form.errors['data']
     else:
         form = UploadForm()
-        result = None
         entities = []
-        add_info = None
         message = None
 
     dictionary = {
@@ -74,9 +72,7 @@ def analyse(request):
         'commit_tag': COMMIT_TAG,
         'max_upload_size': MAX_UPLOAD_SIZE / (1024**2),
         'form': form,
-        'result': result,
         'entities': entities,
-        'add_info': add_info,
         'message': message,
         }
     return render_to_response(
@@ -102,8 +98,6 @@ def _analyse(data):
                  entity.find('ticker_string').text,
                  entity.find('polarity').text)
                 for entity in result_tree])
-        add_info = open(
-            get_tmp_path(data.folder, 'pol_string.txt')).read()
     elif file_type == '.xml':
-        result, entities, add_info = None, [], None
-    return result, entities, add_info
+        entities = []
+    return entities
