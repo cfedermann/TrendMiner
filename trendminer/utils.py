@@ -5,7 +5,9 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 
 import re
+import time
 
+from datetime import datetime
 from os import path
 from zipfile import ZipFile
 from zipfile import error as BadZipFile
@@ -15,6 +17,16 @@ from settings import ACCEPTED_FILE_TYPES, TESTFILES_PATH, TMP_PATH
 
 def sanitize_file_name(name):
     return re.sub('[\(\)\[\]]', '', name.lower().replace(' ', '_'))
+
+def create_unique_file_name(file_name):
+    if not starts_with_timestamp(file_name):
+        return datetime.fromtimestamp(time.time()).strftime(
+            '%Y-%m-%d_%H-%M-%S') + '_{}'.format(file_name)
+    else:
+        return file_name
+
+def starts_with_timestamp(file_name):
+    return re.match('\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}', file_name)
 
 def get_tmp_path(*args):
     return path.join(TMP_PATH, *args)
@@ -44,9 +56,10 @@ def extract_archive(file_path):
 def file_on_disk(func):
     def wrapper(*args, **kwargs):
         uploaded_file = args[0]
-        uploaded_file.name = sanitize_file_name(uploaded_file.name)
-        file_path = get_tmp_path(uploaded_file.name)
         file_extension = get_file_ext(uploaded_file.name)
+        uploaded_file.name = create_unique_file_name(
+            sanitize_file_name(uploaded_file.name))
+        file_path = get_tmp_path(uploaded_file.name)
         if file_extension in ACCEPTED_FILE_TYPES and not \
                 path.exists(file_path):
             write_file(uploaded_file, file_path)

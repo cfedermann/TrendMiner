@@ -10,6 +10,7 @@ from xml.etree import ElementTree
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as _login, logout as _logout
+from django.core.paginator import Paginator
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 
@@ -54,26 +55,47 @@ def logout(request, next_page):
 
 @login_required
 def analyse(request):
+    request_id = None
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
+            request_id = path.splitext(request.FILES['data'].name)[0]
             entities = _analyse(request.FILES['data'])
+            paginator = Paginator(entities, 10)
+            entities = paginator.page(1)
             message = 'Success!'
         else:
             entities = []
             message = form.errors['data']
     else:
         form = UploadForm()
-        entities = []
         message = None
+        request_id = request.GET.get('rid', default=None)
+        page = request.GET.get('page', default=None)
+        if request_id and page:
+            # Parse XML and serialize entities
+            result = open(get_tmp_path(request_id, 'om.xml')).read()
+            result_tree = ElementTree.fromstring(result)
+            entities = sorted([
+                    (entity.find('name').text,
+                     entity.find('source_title').text,
+                     entity.find('ticker_string').text,
+                     entity.find('polarity').text)
+                    for entity in result_tree])
+            # Paginate them:
+            paginator = Paginator(entities, 10)
+            entities = paginator.page(page)
+        else:
+            entities = []
 
     dictionary = {
         'title': 'Trendminer Web Services',
         'commit_tag': COMMIT_TAG,
         'max_upload_size': MAX_UPLOAD_SIZE / (1024**2),
         'form': form,
-        'entities': entities,
         'message': message,
+        'rid': request_id,
+        'entities': entities,
         }
     return render_to_response(
         "analyse.html", dictionary,
