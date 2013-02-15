@@ -20,6 +20,10 @@ urlpatterns = patterns('',
       {'next_page': '/'}),
 
     url(r'^analyse/$', 'trendminer.views.analyse', name='analyse'),
+    url(r'^analyse/(?P<request_id>\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}_.*)' \
+            '/(?P<page>[1-9]\d*)/$',
+        'trendminer.views.analyse',
+        name='results'),
 
     # url(r'^trendminer/', include('trendminer.foo.urls')),
 

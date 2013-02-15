@@ -72,13 +72,13 @@
       <div class="pagination">
         <span class="step-links">
           {% if entities.has_previous %}
-            <a href="?rid={{ rid }}&page={{ entities.previous_page_number }}">Previous</a>
+            <a href="{% url results rid entities.previous_page_number %}">Previous</a>
           {% endif %}
           <span class="current">
             Page {{ entities.number }} of {{ entities.paginator.num_pages }}
           </span>
           {% if entities.has_next %}
-            <a href="?rid={{ rid }}&page={{ entities.next_page_number }}">Next</a>
+            <a href="{% url results rid entities.next_page_number %}">Next</a>
           {% endif %}
         </span>
       </div>

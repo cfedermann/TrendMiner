@@ -54,8 +54,7 @@ def logout(request, next_page):
 
 
 @login_required
-def analyse(request):
-    request_id = None
+def analyse(request, request_id=None, page=None):
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -70,8 +69,6 @@ def analyse(request):
     else:
         form = UploadForm()
         message = None
-        request_id = request.GET.get('rid', default=None)
-        page = request.GET.get('page', default=None)
         if request_id and page:
             # Parse XML and serialize entities
             result = open(get_tmp_path(request_id, 'om.xml')).read()
