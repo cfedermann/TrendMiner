@@ -70,16 +70,7 @@ def analyse(request, request_id=None, page=None):
         form = UploadForm()
         message = None
         if request_id and page:
-            # Parse XML and serialize entities
-            result = open(get_tmp_path(request_id, 'om.xml')).read()
-            result_tree = ElementTree.fromstring(result)
-            entities = sorted([
-                    (entity.find('name').text,
-                     entity.find('source_title').text,
-                     entity.find('ticker_string').text,
-                     entity.find('polarity').text)
-                    for entity in result_tree])
-            # Paginate them:
+            entities = parse_results(request_id)
             paginator = Paginator(entities, 10)
             entities = paginator.page(page)
         else:
@@ -108,15 +99,19 @@ def _analyse(data):
             PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
         subprocess.call(
             command, cwd=get_tmp_path(data.folder), shell=True)
-        # Parse XML and serialize entities
-        result = open(get_tmp_path(data.folder, 'om.xml')).read()
-        result_tree = ElementTree.fromstring(result)
-        entities = sorted([
-                (entity.find('name').text,
-                 entity.find('source_title').text,
-                 entity.find('ticker_string').text,
-                 entity.find('polarity').text)
-                for entity in result_tree])
+        entities = parse_results(data.folder)
     elif file_type == '.xml':
         entities = []
+    return entities
+
+
+def parse_results(request_id):
+    result = open(get_tmp_path(request_id, 'om.xml')).read()
+    result_tree = ElementTree.fromstring(result)
+    entities = sorted([
+            (entity.find('name').text,
+             entity.find('source_title').text,
+             entity.find('ticker_string').text,
+             entity.find('polarity').text)
+            for entity in result_tree])
     return entities
