@@ -14,7 +14,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, render_to_response
 from django.template import RequestContext
 
-from settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
+from settings import COMMIT_TAG, ENTITIES_PER_PAGE, MAX_UPLOAD_SIZE, PERL_PATH
 from forms import UploadForm
 from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
@@ -61,7 +61,7 @@ def analyse(request, request_id=None, page=None):
         if form.is_valid():
             request_id = path.splitext(request.FILES['data'].name)[0]
             entities = _analyse(request.FILES['data'])
-            paginator = Paginator(entities, 10)
+            paginator = Paginator(entities, ENTITIES_PER_PAGE)
             page_range = paginator.page_range
             entities = paginator.page(1)
             message = 'Success!'
@@ -73,7 +73,7 @@ def analyse(request, request_id=None, page=None):
         message = None
         if request_id and page:
             entities = parse_results(request_id)
-            paginator = Paginator(entities, 10)
+            paginator = Paginator(entities, ENTITIES_PER_PAGE)
             page_range = paginator.page_range
             entities = paginator.page(page)
         else:

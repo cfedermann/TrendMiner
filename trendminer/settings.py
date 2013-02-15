@@ -18,6 +18,8 @@ ZIP_MIME_TYPES = ('application/zip',)
 XML_MIME_TYPES = ('application/xml', 'text/plain',)
 ACCEPTED_FILE_TYPES = ('.xml', '.zip')
 
+ENTITIES_PER_PAGE = 10
+
 try:
     commit_log = check_output(['git', 'log', '--pretty=oneline'])
     # pylint: disable-msg=E1103
