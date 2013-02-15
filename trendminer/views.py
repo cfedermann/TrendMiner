@@ -55,12 +55,14 @@ def logout(request, next_page):
 
 @login_required
 def analyse(request, request_id=None, page=None):
+    page_range = []
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             request_id = path.splitext(request.FILES['data'].name)[0]
             entities = _analyse(request.FILES['data'])
             paginator = Paginator(entities, 10)
+            page_range = paginator.page_range
             entities = paginator.page(1)
             message = 'Success!'
         else:
@@ -72,6 +74,7 @@ def analyse(request, request_id=None, page=None):
         if request_id and page:
             entities = parse_results(request_id)
             paginator = Paginator(entities, 10)
+            page_range = paginator.page_range
             entities = paginator.page(page)
         else:
             entities = []
@@ -84,6 +87,7 @@ def analyse(request, request_id=None, page=None):
         'message': message,
         'rid': request_id,
         'entities': entities,
+        'page_range': page_range,
         }
     return render_to_response(
         "analyse.html", dictionary,
