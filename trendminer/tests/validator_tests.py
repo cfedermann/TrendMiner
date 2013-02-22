@@ -98,7 +98,9 @@ class ValidatorTest(TestCase):
 
     def test_zip_integrity_validator(self):
         self.__check_form_errors(
-            'corrupt.zip', UploadFormErrors.ZIP_INTEGRITY)
+            '2013-01-01_12-00-00_corrupt.zip',
+            UploadFormErrors.ZIP_INTEGRITY)
+        os.remove(get_tmp_path('2013-01-01_12-00-00_corrupt.zip'))
 
     def test_zip_contents_validator(self):
         prefix = create_unique_file_name('')
