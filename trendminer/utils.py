@@ -28,7 +28,7 @@ def add_timestamp_prefix(file_name):
         return file_name
 
 def starts_with_timestamp(file_name):
-    return re.match('\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}', file_name)
+    return re.match('\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}_', file_name)
 
 def get_tmp_path(*args):
     return path.join(TMP_PATH, *args)
