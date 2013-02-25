@@ -10,9 +10,9 @@ from xml.etree import ElementTree
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as _login, logout as _logout
-from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage, Paginator
 from django.http import Http404
-from django.shortcuts import render, render_to_response
+from django.shortcuts import redirect, render, render_to_response
 from django.template import RequestContext
 
 from settings import COMMIT_TAG, ENTITIES_PER_PAGE, MAX_UPLOAD_SIZE, PERL_PATH
@@ -38,9 +38,8 @@ def login(request, template_name):
           'title': 'TrendMiner Web Services',
           'commit_tag': COMMIT_TAG,
           'message': 'You are already logged in as ' \
-            ' <code>"{0}"</code>.'.format(request.user.username),
+            '<code>"{0}"</code>.'.format(request.user.username),
         }
-
         return render(request, 'home.html', dictionary)
 
     extra_context = {'commit_tag': COMMIT_TAG}
@@ -79,7 +78,10 @@ def analyse(request, request_id=None, page=None):
                 raise Http404
             paginator = Paginator(entities, ENTITIES_PER_PAGE)
             page_range = paginator.page_range
-            entities = paginator.page(page)
+            try:
+                entities = paginator.page(page)
+            except EmptyPage:
+                return redirect('results', request_id=request_id, page=1)
         else:
             entities = []
 
