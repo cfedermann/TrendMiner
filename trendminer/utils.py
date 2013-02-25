@@ -45,7 +45,7 @@ def remove_upload(file_name):
             if os.path.exists(output_folder):
                 shutil.rmtree(output_folder)
 
-def write_file(uploaded_file, path):
+def store_upload(uploaded_file, path):
     with open(path, 'w') as destination:
         for chunk in uploaded_file.chunks():
             destination.write(chunk)
@@ -68,7 +68,7 @@ def file_on_disk(func):
         file_path = get_tmp_path(uploaded_file.name)
         if file_extension in ACCEPTED_FILE_TYPES and not \
                 path.exists(file_path):
-            write_file(uploaded_file, file_path)
+            store_upload(uploaded_file, file_path)
         return func(*args, **kwargs)
     return wrapper
 

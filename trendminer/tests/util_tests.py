@@ -16,7 +16,7 @@ from django.test import TestCase
 
 from utils import add_timestamp_prefix, extract_archive, get_file_ext
 from utils import get_tmp_path, remove_upload, sanitize_file_name
-from utils import starts_with_timestamp, write_file
+from utils import starts_with_timestamp, store_upload
 
 
 class UtilTest(TestCase):
@@ -87,11 +87,11 @@ class UtilTest(TestCase):
                 os.path.exists(os.path.join(self.upload_dir, test_zip)))
             self.assertFalse(os.path.exists(folder))
 
-    def test_write_file(self):
+    def test_store_upload(self):
         with self.__create_temp_file('.txt', 1024) as temp_file:
             fake_upload = File(temp_file)
             file_path = os.path.join(self.upload_dir, temp_file.name)
-            write_file(fake_upload, file_path)
+            store_upload(fake_upload, file_path)
             self.assertTrue(os.path.exists(file_path))
 
     def test_extract_archive(self):
