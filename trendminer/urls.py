@@ -3,7 +3,7 @@ Project: TrendMiner Demo Web Services
 Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
-from django.conf.urls.defaults import include, patterns, url
+from django.conf.urls.defaults import patterns, url
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin

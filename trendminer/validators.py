@@ -7,7 +7,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 import shlex
 import subprocess
 
-from os import listdir, path
+from os import listdir
 from zipfile import error as BadZipFile
 from zipfile import ZipFile
 
