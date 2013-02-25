@@ -7,19 +7,27 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
 
-from settings import MAX_UPLOAD_SIZE, ROOT_PATH
+from settings import MAX_UPLOAD_SIZE, ROOT_PATH, TESTFILES_PATH
 from trendminer import UploadFormErrors
-from utils import create_unique_file_name, get_test_file, get_tmp_path
+from utils import add_timestamp_prefix, get_file_ext, remove_upload
 
 
 class ValidatorTest(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.testdir = tempfile.mkdtemp(suffix='.test', dir=ROOT_PATH)
+        cls.file_prefix = add_timestamp_prefix('')
+        cls.uploaded_files = []
 
     @classmethod
     def tearDownClass(cls):
         shutil.rmtree(cls.testdir)
+        cls.__delete_uploaded_files()
+
+    @classmethod
+    def __delete_uploaded_files(self):
+        for upload in self.uploaded_files:
+            remove_upload(upload)
 
     def setUp(self):
         self.user = User.objects.create_user(
@@ -31,161 +39,103 @@ class ValidatorTest(TestCase):
     def tearDown(self):
         self.browser.logout()
 
+    def __create_temp_file(self, extension, size):
+        temp_file = tempfile.NamedTemporaryFile(
+            prefix=self.file_prefix, suffix=extension, dir=self.testdir)
+        temp_file.truncate(size)
+        return temp_file
+
+    def __create_test_xml(self, name, content):
+        xml_file = open(
+            os.path.join(self.testdir, name), 'w')
+        xml_file.write(content)
+        xml_file.close()
+        return name
+
+    def __create_test_zip(self, name, *files):
+        zip_file = zipfile.ZipFile(
+            os.path.join(self.testdir, name), 'w')
+        os.chdir(self.testdir)
+        for file_name in files:
+            zip_file.write(os.path.basename(file_name))
+        os.chdir(os.path.dirname(self.testdir))
+        zip_file.close()
+        return name
+
+    def __open_test_file(self, file_path):
+        flag = 'rb' if not get_file_ext(file_path) == '.xml' else 'r'
+        return open(file_path, flag)
+
     def __check_form_errors(self, file_name, expected_errors):
-        with get_test_file(file_name) as testfile:
+        with self.__open_test_file(file_name) as testfile:
             response = self.browser.post('/analyse/', {'data': testfile})
             self.assertFormError(
                 response, form='form', field='data', errors=expected_errors)
+        self.uploaded_files.append(os.path.basename(file_name))
 
     def test_ext_validator(self):
-        temp_file = tempfile.NamedTemporaryFile(suffix='.png', dir=self.testdir)
-        temp_file.truncate(1024)
-        with open(temp_file.name, 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.EXTENSION)
-        temp_file.close()
+        with self.__create_temp_file('.png', 1024) as temp_file:
+            self.__check_form_errors(
+                temp_file.name, UploadFormErrors.EXTENSION)
 
     def test_size_validator(self):
-        prefix = create_unique_file_name('')
-        temp_file = tempfile.NamedTemporaryFile(
-            prefix=prefix, suffix='.zip', dir=self.testdir)
-        temp_file.truncate(MAX_UPLOAD_SIZE+1)
-        with open(temp_file.name, 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.SIZE)
-        temp_file.close()
-        os.remove(get_tmp_path(os.path.basename(temp_file.name.lower())))
-
-        temp_file = tempfile.NamedTemporaryFile(
-            prefix=prefix, suffix='.xml', dir=self.testdir)
-        temp_file.truncate(MAX_UPLOAD_SIZE+1)
-        with open(temp_file.name, 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.SIZE)
-        temp_file.close()
-        os.remove(get_tmp_path(os.path.basename(temp_file.name.lower())))
+        with self.__create_temp_file('.zip', MAX_UPLOAD_SIZE+1) as temp_file:
+            self.__check_form_errors(temp_file.name, UploadFormErrors.SIZE)
+        with self.__create_temp_file('.xml', MAX_UPLOAD_SIZE+1) as temp_file:
+            self.__check_form_errors(temp_file.name, UploadFormErrors.SIZE)
 
     def test_mime_type_validator(self):
-        prefix = create_unique_file_name('fake')
-        temp_file = tempfile.NamedTemporaryFile(
-            prefix=prefix, suffix='.zip', dir=self.testdir)
-        temp_file.truncate(1024)
-        with open(temp_file.name, 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.MIME_TYPE.format(
+        with self.__create_temp_file('.zip', 1024) as temp_file:
+            self.__check_form_errors(
+                temp_file.name, UploadFormErrors.MIME_TYPE.format(
                     '.zip', 'application/octet-stream'))
-        temp_file.close()
-        os.remove(get_tmp_path(os.path.basename(temp_file.name.lower())))
-        temp_file = tempfile.NamedTemporaryFile(
-            prefix=prefix, suffix='.xml', dir=self.testdir)
-        temp_file.truncate(1024)
-        with open(temp_file.name, 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.MIME_TYPE.format(
+        with self.__create_temp_file('.xml', 1024) as temp_file:
+            self.__check_form_errors(
+                temp_file.name, UploadFormErrors.MIME_TYPE.format(
                     '.xml', 'application/octet-stream'))
-        temp_file.close()
-        os.remove(get_tmp_path(os.path.basename(temp_file.name.lower())))
 
     def test_zip_integrity_validator(self):
         self.__check_form_errors(
-            '2013-01-01_12-00-00_corrupt.zip',
+            os.path.join(TESTFILES_PATH, '2013-01-01_12-00-00_corrupt.zip'),
             UploadFormErrors.ZIP_INTEGRITY)
-        os.remove(get_tmp_path('2013-01-01_12-00-00_corrupt.zip'))
 
     def test_zip_contents_validator(self):
-        prefix = create_unique_file_name('')
-        temp_file = tempfile.NamedTemporaryFile(
-            prefix=prefix, suffix='.txt', dir=self.testdir)
-        temp_file.truncate(1024)
-        temp_zip = zipfile.ZipFile(
-            os.path.join(self.testdir, prefix+'txt.zip'), 'w')
-        os.chdir(self.testdir)
-        temp_zip.write(os.path.basename(temp_file.name))
-        os.chdir(os.path.dirname(self.testdir))
-        temp_zip.close()
-        with open(os.path.join(
-                self.testdir, prefix+'txt.zip'), 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.ZIP_CONTENTS)
-        temp_file.close()
-        os.remove(get_tmp_path(prefix+'txt.zip'))
-        shutil.rmtree(get_tmp_path(prefix+'txt'))
+        with self.__create_temp_file('.png', 1024) as temp_file:
+            test_zip = self.__create_test_zip(
+                self.file_prefix+'png.zip', temp_file.name)
+            self.__check_form_errors(
+                os.path.join(self.testdir, test_zip),
+                UploadFormErrors.ZIP_CONTENTS)
 
     def test_xml_wf_validator(self):
-        prefix = create_unique_file_name('')
-        temp_file = open(
-            os.path.join(self.testdir, prefix+'malformed.xml'), 'w')
-        temp_file.write('This is not valid XML.')
-        temp_file.close()
-        with open(os.path.join(
-                self.testdir, prefix+'malformed.xml'), 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.XML_WELLFORMEDNESS)
-        os.remove(get_tmp_path(prefix+'malformed.xml'))
-        temp_zip = zipfile.ZipFile(
-            os.path.join(self.testdir, prefix+'malformed-xml.zip'), 'w')
-        os.chdir(self.testdir)
-        temp_zip.write(prefix+'malformed.xml')
-        os.chdir(os.path.dirname(self.testdir))
-        temp_zip.close()
-        with open(os.path.join(
-                self.testdir, prefix+'malformed-xml.zip'), 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.FILES_WELLFORMEDNESS)
-        os.remove(get_tmp_path(prefix+'malformed-xml.zip'))
-        shutil.rmtree(get_tmp_path(prefix+'malformed-xml'))
+        test_file = self.__create_test_xml(
+            self.file_prefix+'malformed.xml', 'This is not valid XML.')
+        self.__check_form_errors(
+            os.path.join(self.testdir, test_file),
+            UploadFormErrors.XML_WELLFORMEDNESS)
+        test_zip = self.__create_test_zip(
+            self.file_prefix+'malformed-xml.zip', test_file)
+        self.__check_form_errors(
+            os.path.join(self.testdir, test_zip),
+            UploadFormErrors.FILES_WELLFORMEDNESS)
 
     def test_xml_schema_validator(self):
-        prefix = create_unique_file_name('')
-        temp_file = open(
-            os.path.join(self.testdir, prefix+'valid.xml'), 'w')
-        temp_file.write(
+        test_file = self.__create_test_xml(
+            self.file_prefix+'valid.xml',
             '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n' \
                 '<document></document>')
-        temp_file.close()
-        with open(os.path.join(
-                self.testdir, prefix+'valid.xml'), 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.XML_SCHEMA_CONFORMITY)
-        os.remove(get_tmp_path(prefix+'valid.xml'))
-        temp_zip = zipfile.ZipFile(
-            os.path.join(self.testdir, prefix+'valid-xml.zip'), 'w')
-        os.chdir(self.testdir)
-        temp_zip.write(prefix+'valid.xml')
-        os.chdir(os.path.dirname(self.testdir))
-        temp_zip.close()
-        with open(os.path.join(
-                self.testdir, prefix+'valid-xml.zip'), 'r') as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
-            self.assertFormError(
-                response, form='form', field='data',
-                errors=UploadFormErrors.FILES_SCHEMA_CONFORMITY)
-        os.remove(get_tmp_path(prefix+'valid-xml.zip'))
-        shutil.rmtree(get_tmp_path(prefix+'valid-xml'))
+        self.__check_form_errors(
+            os.path.join(self.testdir, test_file),
+            UploadFormErrors.XML_SCHEMA_CONFORMITY)
+        test_zip = self.__create_test_zip(
+            self.file_prefix+'valid-xml.zip', test_file)
+        self.__check_form_errors(
+            os.path.join(self.testdir, test_zip),
+            UploadFormErrors.FILES_SCHEMA_CONFORMITY)
 
     def test_successful_cases(self):
-        prefix = create_unique_file_name('')
-        temp_file = open(
-            os.path.join(self.testdir, prefix+'schema-conforming.xml'), 'w')
-        temp_file.write(
+        test_file = self.__create_test_xml(
+            self.file_prefix+'schema-conforming.xml',
             '<item>\n' \
                 '<identificativo>XY2013010101234</identificativo>\n' \
                 '<data>2013-01-01</data>\n' \
@@ -198,24 +148,15 @@ class ValidatorTest(TestCase):
                 '<TESTO></TESTO>\n' \
                 '<database>DOCTYPE=HTML</database>\n' \
                 '</item>')
-        temp_file.close()
-        with open(os.path.join(
-                self.testdir,
-                prefix+'schema-conforming.xml'), 'r') as testfile:
+        with self.__open_test_file(
+            os.path.join(self.testdir, test_file)) as testfile:
             response = self.browser.post('/analyse/', {'data': testfile})
             self.assertContains(response, 'Success!')
-        os.remove(get_tmp_path(prefix+'schema-conforming.xml'))
-        temp_zip = zipfile.ZipFile(
-            os.path.join(
-                self.testdir, prefix+'schema-conforming-xml.zip'), 'w')
-        os.chdir(self.testdir)
-        temp_zip.write(prefix+'schema-conforming.xml')
-        os.chdir(os.path.dirname(self.testdir))
-        temp_zip.close()
-        with open(os.path.join(
-                self.testdir,
-                prefix+'schema-conforming-xml.zip'), 'r') as testfile:
+        self.uploaded_files.append(test_file)
+        test_zip = self.__create_test_zip(
+            self.file_prefix+'schema-conforming-xml.zip', test_file)
+        with self.__open_test_file(
+            os.path.join(self.testdir, test_zip)) as testfile:
             response = self.browser.post('/analyse/', {'data': testfile})
             self.assertContains(response, 'Success!')
-        os.remove(get_tmp_path(prefix+'schema-conforming-xml.zip'))
-        shutil.rmtree(get_tmp_path(prefix+'schema-conforming-xml'))
+        self.uploaded_files.append(test_zip)

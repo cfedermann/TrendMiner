@@ -4,7 +4,9 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
 
+import os
 import re
+import shutil
 import time
 
 from datetime import datetime
@@ -12,13 +14,13 @@ from os import path
 from zipfile import ZipFile
 from zipfile import error as BadZipFile
 
-from settings import ACCEPTED_FILE_TYPES, TESTFILES_PATH, TMP_PATH
+from settings import ACCEPTED_FILE_TYPES, TMP_PATH
 
 
 def sanitize_file_name(name):
     return re.sub('[\(\)\[\]]', '', name.lower().replace(' ', '_'))
 
-def create_unique_file_name(file_name):
+def add_timestamp_prefix(file_name):
     if not starts_with_timestamp(file_name):
         return datetime.fromtimestamp(time.time()).strftime(
             '%Y-%m-%d_%H-%M-%S') + '_{}'.format(file_name)
@@ -34,10 +36,14 @@ def get_tmp_path(*args):
 def get_file_ext(file_name):
     return path.splitext(file_name)[1]
 
-def get_test_file(file_name):
-    flag = 'rb' if not get_file_ext(file_name) == '.xml' else 'r'
-    return open(
-        path.join(TESTFILES_PATH, file_name), flag)
+def remove_upload(file_name):
+    file_path = get_tmp_path(file_name.lower())
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        if get_file_ext(file_path) == '.zip':
+            output_folder = os.path.splitext(file_path)[0]
+            if os.path.exists(output_folder):
+                shutil.rmtree(output_folder)
 
 def write_file(uploaded_file, path):
     with open(path, 'w') as destination:
@@ -57,7 +63,7 @@ def file_on_disk(func):
     def wrapper(*args, **kwargs):
         uploaded_file = args[0]
         file_extension = get_file_ext(uploaded_file.name)
-        uploaded_file.name = create_unique_file_name(
+        uploaded_file.name = add_timestamp_prefix(
             sanitize_file_name(uploaded_file.name))
         file_path = get_tmp_path(uploaded_file.name)
         if file_extension in ACCEPTED_FILE_TYPES and not \
