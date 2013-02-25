@@ -95,9 +95,11 @@ class ValidatorTest(TestCase):
                     '.xml', 'application/octet-stream'))
 
     def test_zip_integrity_validator(self):
-        self.__check_form_errors(
-            os.path.join(TESTFILES_PATH, '2013-01-01_12-00-00_corrupt.zip'),
-            UploadFormErrors.ZIP_INTEGRITY)
+        file_path = os.path.join(
+            TESTFILES_PATH, '2013-01-01_12-00-00_corrupt.zip')
+        if os.path.exists(file_path):
+            self.__check_form_errors(
+                file_path, UploadFormErrors.ZIP_INTEGRITY)
 
     def test_zip_contents_validator(self):
         with self.__create_temp_file('.png', 1024) as temp_file:
