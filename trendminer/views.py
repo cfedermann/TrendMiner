@@ -3,6 +3,7 @@ Project: TrendMiner Demo Web Services
 Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <tkrones@coli.uni-saarland.de>
 """
+
 import subprocess
 
 from os import path
@@ -10,12 +11,14 @@ from xml.etree import ElementTree
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import login as _login, logout as _logout
-from django.shortcuts import render, render_to_response
+from django.core.paginator import EmptyPage, Paginator
+from django.http import Http404
+from django.shortcuts import redirect, render, render_to_response
 from django.template import RequestContext
 
-from trendminer.settings import COMMIT_TAG, MAX_UPLOAD_SIZE, PERL_PATH
-from trendminer.forms import UploadForm
-from trendminer.utils import extract_archive, write_file
+from settings import COMMIT_TAG, ENTITIES_PER_PAGE, MAX_UPLOAD_SIZE, PERL_PATH
+from forms import UploadForm
+from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
 
 def home(request):
@@ -36,9 +39,8 @@ def login(request, template_name):
           'title': 'TrendMiner Web Services',
           'commit_tag': COMMIT_TAG,
           'message': 'You are already logged in as ' \
-            ' <code>"{0}"</code>.'.format(request.user.username),
+            '<code>"{0}"</code>.'.format(request.user.username),
         }
-
         return render(request, 'home.html', dictionary)
 
     extra_context = {'commit_tag': COMMIT_TAG}
@@ -53,59 +55,74 @@ def logout(request, next_page):
 
 
 @login_required
-def analyse(request):
+def analyse(request, request_id=None, page=None):
+    page_range = []
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
-            result, entities, add_info = _analyse(request.FILES['data'])
+            request_id = path.splitext(request.FILES['data'].name)[0]
+            entities = _analyse(request.FILES['data'])
+            paginator = Paginator(entities, ENTITIES_PER_PAGE)
+            page_range = paginator.page_range
+            entities = paginator.page(1)
             message = 'Success!'
         else:
-            result, entities, add_info = None, [], None
+            entities = []
             message = form.errors['data']
     else:
         form = UploadForm()
-        result = None
-        entities = []
-        add_info = None
         message = None
+        if request_id and page:
+            try:
+                entities = parse_results(request_id)
+            except IOError:
+                raise Http404
+            paginator = Paginator(entities, ENTITIES_PER_PAGE)
+            page_range = paginator.page_range
+            try:
+                entities = paginator.page(page)
+            except EmptyPage:
+                return redirect('results', request_id=request_id, page=1)
+        else:
+            entities = []
 
     dictionary = {
         'title': 'Trendminer Web Services',
         'commit_tag': COMMIT_TAG,
         'max_upload_size': MAX_UPLOAD_SIZE / (1024**2),
         'form': form,
-        'result': result,
-        'entities': entities,
-        'add_info': add_info,
         'message': message,
+        'rid': request_id,
+        'entities': entities,
+        'page_range': page_range,
         }
     return render_to_response(
         "analyse.html", dictionary,
         context_instance=RequestContext(request))
 
 
+@archive_extracted
+@file_on_disk
 def _analyse(data):
-    file_path = path.join('/tmp', data.name)
-    file_type = path.splitext(file_path)[1]
-    if not path.exists(file_path):
-        write_file(data, file_path)
+    file_type = get_file_ext(data.name)
     if file_type == '.zip':
-        folder_name = extract_archive(file_path)
         command = 'perl -I {0} {1}'.format(
             PERL_PATH, path.join(PERL_PATH, 'om-xml.pl'))
         subprocess.call(
-            command, cwd=path.join('/tmp', folder_name), shell=True)
-        # Parse XML and serialize entities
-        result = open(path.join('/tmp', folder_name, 'om.xml')).read()
-        result_tree = ElementTree.fromstring(result)
-        entities = sorted([
-                (entity.find('name').text,
-                 entity.find('source_title').text,
-                 entity.find('ticker_string').text,
-                 entity.find('polarity').text)
-                for entity in result_tree])
-        add_info = open(
-            path.join('/tmp', folder_name, 'pol_string.txt')).read()
+            command, cwd=get_tmp_path(data.folder), shell=True)
+        entities = parse_results(data.folder)
     elif file_type == '.xml':
-        result, entities, add_info = None, [], None
-    return result, entities, add_info
+        entities = []
+    return entities
+
+
+def parse_results(request_id):
+    result = open(get_tmp_path(request_id, 'om.xml')).read()
+    result_tree = ElementTree.fromstring(result)
+    entities = sorted([
+            (entity.find('name').text,
+             entity.find('source_title').text,
+             entity.find('ticker_string').text,
+             entity.find('polarity').text)
+            for entity in result_tree])
+    return entities

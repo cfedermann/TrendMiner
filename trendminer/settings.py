@@ -5,14 +5,20 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from os import getcwd, path
 from subprocess import check_output
+from tempfile import gettempdir
 
 ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 SCHEMA_PATH = path.join(path.dirname(ROOT_PATH), 'trendminer.xsd')
+TMP_PATH = gettempdir()
+TESTFILES_PATH = path.join(path.dirname(ROOT_PATH), 'testfiles')
 
 MAX_UPLOAD_SIZE = 5 * (1024 ** 2) # 5MB
 ZIP_MIME_TYPES = ('application/zip',)
 XML_MIME_TYPES = ('application/xml', 'text/plain',)
+ACCEPTED_FILE_TYPES = ('.xml', '.zip')
+
+ENTITIES_PER_PAGE = 10
 
 try:
     commit_log = check_output(['git', 'log', '--pretty=oneline'])
@@ -141,6 +147,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'trendminer',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
