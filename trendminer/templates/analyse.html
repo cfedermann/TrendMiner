@@ -57,13 +57,20 @@
 	<tbody>
 	  {% for entity in entities %}
 	    <tr>
-	      {% for attribute in entity %}
+              {% for attribute in entity.attributes %}
+              <td>
 		{% if attribute %}
-		  <td>{{ attribute }}</td>
+		  {{ attribute }}
 		{% else %}
-		  <td>-</td>
+		  -
 		{% endif %}
-	      {% endfor %}
+              </td>
+              {% endfor %}
+              <td style="white-space: nowrap">
+                {% for i in entity.polarity %}
+                  <i class="icon-star"></i>
+                {% endfor %}
+              </td>
 	    </tr>
 	  {% endfor %}
 	</tbody>

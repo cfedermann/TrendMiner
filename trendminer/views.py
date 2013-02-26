@@ -120,9 +120,9 @@ def parse_results(request_id):
     result = open(get_tmp_path(request_id, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
     entities = sorted([
-            (entity.find('name').text,
-             entity.find('source_title').text,
-             entity.find('ticker_string').text,
-             entity.find('polarity').text)
+            {'attributes': [entity.find('name').text,
+                            entity.find('source_title').text,
+                            entity.find('ticker_string').text],
+             'polarity': range(int(entity.find('polarity').text))}
             for entity in result_tree])
     return entities
