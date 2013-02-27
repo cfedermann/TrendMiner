@@ -17,6 +17,41 @@
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
       }
+      /* Selectively re-add CSS for tablesorter.js as defined in previous Bootstrap versions */
+      table .header {
+        cursor: pointer;
+      }
+      table .header:after {
+        content: "";
+        float: right;
+        margin-top: 7px;
+        border-width: 0 4px 4px;
+        border-style: solid;
+        border-color: #000000 transparent;
+        visibility: hidden;
+      }
+      table .header:hover:after {
+        visibility: visible;
+      }
+      table .headerSortDown:after, table .headerSortDown:hover:after {
+        visibility: visible;
+        filter: alpha(opacity=60);
+        -moz-opacity: 0.6;
+        opacity: 0.6;
+      }
+      table .headerSortUp:after {
+        border-bottom: none;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 4px solid #000000;
+        visibility: visible;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        box-shadow: none;
+        filter: alpha(opacity=60);
+        -moz-opacity: 0.6;
+        opacity: 0.6;
+      }
     </style>
     <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css">
 

@@ -123,6 +123,7 @@ def parse_results(request_id):
             {'attributes': [entity.find('name').text,
                             entity.find('source_title').text,
                             entity.find('ticker_string').text],
-             'polarity': range(int(entity.find('polarity').text))}
+             'polarity': entity.find('polarity').text,
+             'polarity_range': range(int(entity.find('polarity').text))}
             for entity in result_tree])
     return entities
