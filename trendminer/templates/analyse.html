@@ -116,10 +116,10 @@
         else {
           if ($('div.control-group').hasClass('error')) {
             $('div.control-group').removeClass('error');
+            $('span.help-inline').text('File size is within limits.');
+            $('div.control-group').addClass('info');
+            $('button.btn').removeAttr('disabled');
           }
-          $('span.help-inline').text('File size is within limits.');
-          $('div.control-group').addClass('info');
-          $('button.btn').removeAttr('disabled');
         }
       });
 
