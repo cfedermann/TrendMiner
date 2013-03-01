@@ -80,15 +80,19 @@
       </table>
 
       <div class="pagination pagination-centered">
-        <ul>
-          {% for page_number in page_range %}
-            {% if page_number == entities.number %}
-              <li class="active"><a href="{% url results rid page_number %}">{{ page_number }}</a></li>
-            {% else %}
-              <li><a href="{% url results rid page_number %}">{{ page_number }}</a></li>
-            {% endif %}
-          {% endfor %}
-        </ul>
+        <span class="step-links">
+          {% if entities.has_previous %}
+            <a class="btn btn-large" href="{% url results rid entities.previous_page_number %}">Previous</a>
+          {% endif %}
+
+          <span class="muted">
+            &nbsp;Page {{ entities.number }} of {{ entities.paginator.num_pages }}.&nbsp;
+          </span>
+
+          {% if entities.has_next %}
+            <a class="btn btn-large" href="{% url results rid entities.next_page_number %}">Next</a>
+          {% endif %}
+        </span>
       </div>
 
     </fieldset>
