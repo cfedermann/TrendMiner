@@ -40,6 +40,11 @@
 
       <div class="form-actions">
 	<button type="submit" class="btn btn-primary">Upload</button>
+        <span class="help-inline">
+          <small>
+            Click <a class="btn btn-mini" href="{{ STATIC_URL }}xsd/trendminer.xsd">here</a> for an XSD schema describing the data format TrendMiner expects.
+          </small>
+        </span>
       </div>
     </fieldset>
   </form>
@@ -47,38 +52,52 @@
   {% if entities %}
     <fieldset>
       <legend>Your Results</legend>
-      <table class="table table-striped table-hover">
+      <table id="results" class="table table-striped table-hover tablesorter">
 	<thead>
-	  <th>Name</th>
-	  <th>Source Title</th>
-	  <th>Ticker String</th>
-	  <th>Polarity</th>
+          <tr>
+	    <th style="width: 50px">Name</th>
+	    <th>Source Title</th>
+	    <th>Ticker String</th>
+	    <th>Polarity</th>
+          </tr>
 	</thead>
 	<tbody>
 	  {% for entity in entities %}
 	    <tr>
-	      {% for attribute in entity %}
+              {% for attribute in entity.attributes %}
+              <td>
 		{% if attribute %}
-		  <td>{{ attribute }}</td>
+		  {{ attribute }}
 		{% else %}
-		  <td>-</td>
+		  -
 		{% endif %}
-	      {% endfor %}
+              </td>
+              {% endfor %}
+              <td class="polarity" style="white-space: nowrap">
+                {% for i in entity.polarity_range %}
+                  <i class="icon-star"></i>
+                {% endfor %}
+                <span style="visibility: hidden">{{ entity.polarity }}</span>
+              </td>
 	    </tr>
 	  {% endfor %}
 	</tbody>
       </table>
 
       <div class="pagination pagination-centered">
-        <ul>
-          {% for page_number in page_range %}
-            {% if page_number == entities.number %}
-              <li class="active"><a href="{% url results rid page_number %}">{{ page_number }}</a></li>
-            {% else %}
-              <li><a href="{% url results rid page_number %}">{{ page_number }}</a></li>
-            {% endif %}
-          {% endfor %}
-        </ul>
+        <span class="step-links">
+          {% if entities.has_previous %}
+            <a class="btn btn-large" href="{% url results rid entities.previous_page_number %}">Previous</a>
+          {% endif %}
+
+          <span class="muted">
+            &nbsp;Page {{ entities.number }} of {{ entities.paginator.num_pages }}.&nbsp;
+          </span>
+
+          {% if entities.has_next %}
+            <a class="btn btn-large" href="{% url results rid entities.next_page_number %}">Next</a>
+          {% endif %}
+        </span>
       </div>
 
     </fieldset>
@@ -87,8 +106,12 @@
 {% endblock %}
 
 {% block javascript %}
+  <script src="{{ STATIC_URL }}js/jquery.tablesorter.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
+
+      $("table#results").tablesorter();
+
       $('div.controls input:first').bind('change', function() {
         var fileSize = this.files[0].size;
         if (fileSize > 5242880) {
@@ -102,12 +125,13 @@
         else {
           if ($('div.control-group').hasClass('error')) {
             $('div.control-group').removeClass('error');
+            $('span.help-inline').text('File size is within limits.');
+            $('div.control-group').addClass('info');
+            $('button.btn').removeAttr('disabled');
           }
-          $('span.help-inline').text('File size is within limits.');
-          $('div.control-group').addClass('info');
-          $('button.btn').removeAttr('disabled');
         }
       });
+
     });
   </script>
 {% endblock %}

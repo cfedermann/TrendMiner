@@ -51,6 +51,8 @@ class ViewTest(TestCase):
             follow=True)
         self.__check_status_code(response)
         self.__check_context_var(response, 'commit_tag', COMMIT_TAG)
+        username = response.context['user'].username
+        self.assertEquals(username, 'trendminer-demo')
         response = self.browser.post(
             '/login/',
             {'username': self.user.username, 'password': 'trendminer-demo'},
