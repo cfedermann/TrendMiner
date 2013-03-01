@@ -56,14 +56,12 @@ def logout(request, next_page):
 
 @login_required
 def analyse(request, request_id=None, page=None):
-    page_range = []
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
             request_id = path.splitext(request.FILES['data'].name)[0]
             entities = _analyse(request.FILES['data'])
             paginator = Paginator(entities, ENTITIES_PER_PAGE)
-            page_range = paginator.page_range
             entities = paginator.page(1)
             message = 'Success!'
         else:
@@ -78,7 +76,6 @@ def analyse(request, request_id=None, page=None):
             except IOError:
                 raise Http404
             paginator = Paginator(entities, ENTITIES_PER_PAGE)
-            page_range = paginator.page_range
             try:
                 entities = paginator.page(page)
             except EmptyPage:
@@ -94,7 +91,6 @@ def analyse(request, request_id=None, page=None):
         'message': message,
         'rid': request_id,
         'entities': entities,
-        'page_range': page_range,
         }
     return render_to_response(
         "analyse.html", dictionary,
@@ -120,9 +116,10 @@ def parse_results(request_id):
     result = open(get_tmp_path(request_id, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
     entities = sorted([
-            (entity.find('name').text,
-             entity.find('source_title').text,
-             entity.find('ticker_string').text,
-             entity.find('polarity').text)
+            {'attributes': [entity.find('name').text,
+                            entity.find('source_title').text,
+                            entity.find('ticker_string').text],
+             'polarity': entity.find('polarity').text,
+             'polarity_range': range(int(entity.find('polarity').text))}
             for entity in result_tree])
     return entities
