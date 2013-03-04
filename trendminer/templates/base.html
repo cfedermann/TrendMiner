@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <title>{{ title }}</title>
     <meta charset="utf-8">
-    <title>{{title}}</title>
     <meta name="description" content="TrendMiner Demo Web Services">
     <meta name="author" content="Christian Federmann">
 
@@ -13,6 +13,7 @@
 
     <!-- Le styles -->
     <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap.css">
+    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css">
     <style>
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -53,7 +54,6 @@
         opacity: 0.6;
       }
     </style>
-    <link rel="stylesheet" href="http://twitter.github.com/bootstrap/assets/css/bootstrap-responsive.css">
 
     <!-- Le fav and touch icons -->
     <link rel="shortcut icon" href="images/favicon.ico">
@@ -69,24 +69,32 @@
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
-          </a>
+          </button>
+
           <a class="brand" href="{% url trendminer.views.home %}">TrendMiner</a>
-          <div class="nav-collapse">
+
+          <div class="nav-collapse collapse">
             <ul class="nav">
-              <li class="active"><a href="{% url trendminer.views.analyse %}">Analyse</a></li>
-
-{% if user.username %}
-              <li><a href="{% url trendminer.views.logout %}">Logout "{{user.username}}"</a></li>
-{% else %}
-              <li><a href="{% url trendminer.views.login %}">Login</a></li>
-{% endif %}
-
+              <li class="active">
+                <a href="{% url trendminer.views.analyse %}">Analyse</a>
+              </li>
+              {% if user.username %}
+                <li>
+                  <a href="{% url trendminer.views.logout %}">Logout "{{ user.username }}"</a>
+                </li>
+              {% else %}
+                <li>
+                  <a href="{% url trendminer.views.login %}">Login</a>
+                </li>
+              {% endif %}
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>
+
         </div>
       </div>
     </div>
@@ -97,10 +105,21 @@
       <hr/>
 
       <footer>
-        <p>This is the GitHub version {% if commit_tag %}<code><a href="https://github.com/cfedermann/TrendMiner/commit/{{commit_tag}}">{{commit_tag|stringformat:".8s"}}</a></code>{% endif %} of the TrendMiner Demo Web Services. Some rights reserved.{% block footer %}{% endblock %}</p>
+        <p>
+          This is the GitHub version
+          {% if commit_tag %}
+            <code>
+              <a href="https://github.com/cfedermann/TrendMiner/commit/{{commit_tag}}">
+                {{ commit_tag|stringformat:".8s" }}
+              </a>
+            </code>
+          {% endif %}
+          of the TrendMiner Demo Web Services. Some rights reserved.
+          {% block footer %}{% endblock %}
+        </p>
       </footer>
 
-    </div> <!-- /container -->
+    </div>
 
     <!-- Le javascript
     ================================================== -->

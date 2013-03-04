@@ -3,8 +3,12 @@
 {% block content %}
 
   <div class="page-header">
-    <h1>User Authentication <small>Your username and password, please...</small></h1>
-    <p>Use <code>trendminer-demo</code> for both username and password.</p>
+    <h1>
+      User Authentication <small>Your username and password, please...</small>
+    </h1>
+    <p>
+      Use <code>trendminer-demo</code> for both username and password.
+    </p>
   </div>
 
   <form class="form-horizontal" method="post" action="{% url trendminer.views.login %}">
@@ -17,7 +21,7 @@
       <div class="controls">
         <div class="input-prepend">
           <span class="add-on">required</span>
-          <input class="span2" name="username" id="id_username" type="text" size="30" value="{{username}}" />
+          <input class="span2" name="username" id="id_username" type="text" size="30" value="{{ username }}" />
         </div>
         <p class="help-block">Please enter your username</p>
       </div>
@@ -28,7 +32,7 @@
       <div class="controls">
         <div class="input-prepend">
           <span class="add-on">required</span>
-          <input class="span2" name="password" id="id_password" type="password" size="30" value="{{username}}" />
+          <input class="span2" name="password" id="id_password" type="password" size="30" value="{{ username }}" />
         </div>
         <p class="help-block">And also provide your password</p>
       </div>
