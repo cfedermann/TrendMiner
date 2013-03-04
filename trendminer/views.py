@@ -43,7 +43,8 @@ def login(request, template_name):
         }
         return render(request, 'home.html', dictionary)
 
-    extra_context = {'commit_tag': COMMIT_TAG}
+    extra_context = {
+        'commit_tag': COMMIT_TAG, 'title': 'TrendMiner Web Services'}
     return _login(request, template_name, extra_context=extra_context)
 
 
@@ -84,7 +85,7 @@ def analyse(request, request_id=None, page=None):
             entities = []
 
     dictionary = {
-        'title': 'Trendminer Web Services',
+        'title': 'TrendMiner Web Services',
         'commit_tag': COMMIT_TAG,
         'max_upload_size': MAX_UPLOAD_SIZE / (1024**2),
         'form': form,
