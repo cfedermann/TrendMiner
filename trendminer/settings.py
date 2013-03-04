@@ -7,6 +7,8 @@ from os import getcwd, path
 from subprocess import check_output
 from tempfile import gettempdir
 
+URL_PREFIX = 'trendminer'
+
 ROOT_PATH = getcwd()
 PERL_PATH = path.join(path.dirname(ROOT_PATH), 'perl')
 SCHEMA_PATH = path.join(path.dirname(ROOT_PATH), 'trendminer.xsd')
@@ -29,11 +31,14 @@ try:
 except Exception, e:
     COMMIT_TAG = None
 
-FORCE_SCRIPT_NAME = ""
+from utils import prefix_url
 
-LOGIN_URL = '/login/'
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_URL = '/logout/'
+HOME_URL = prefix_url('/')
+LOGIN_URL = prefix_url('/login/')
+LOGIN_REDIRECT_URL = HOME_URL
+LOGOUT_URL = prefix_url('/logout/')
+
+FORCE_SCRIPT_NAME = ""
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG

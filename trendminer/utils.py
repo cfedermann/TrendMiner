@@ -14,8 +14,14 @@ from os import path
 from zipfile import ZipFile
 from zipfile import error as BadZipFile
 
-from settings import ACCEPTED_FILE_TYPES, TMP_PATH
+from settings import ACCEPTED_FILE_TYPES, TMP_PATH, URL_PREFIX
 
+
+def prefix_url(url):
+    if not url or url == '/':
+        return '/{}/'.format(URL_PREFIX.strip('/'))
+    else:
+        return '/{0}/{1}/'.format(URL_PREFIX.strip('/'), url.strip('/'))
 
 def sanitize_file_name(name):
     return re.sub('[\(\)\[\]]', '', name.lower().replace(' ', '_'))
