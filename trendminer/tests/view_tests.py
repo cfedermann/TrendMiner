@@ -31,6 +31,24 @@ class ViewTest(TestCase):
         self.user = User.objects.create_user(
             username='trendminer-demo', password='trendminer-demo')
 
+    def __result_url(self, request_id, page):
+        """
+        Build URL for browsing paginated results associated with a
+        given request ID.
+
+        For valid `page` values, this method uses the utility function
+        `django.core.urlresolvers.reverse` to obtain the results URL
+        for the given request ID and page. In any other case, it has
+        to build the URL manually using string formatting. The reason
+        for this is that the `reverse` function will not find a
+        matching URL if the page value does not match the regular
+        expression defined for this parameter in `urls.py`.
+        """
+        if type(page) == int:
+            return reverse('results', args=[request_id, page])
+        else:
+            return '{0}{1}/{2}/'.format(self.analyse_url, request_id, page)
+
     def __check_status_code(self, response, expected_value=200):
         self.assertEquals(response.status_code, expected_value)
 
@@ -93,8 +111,8 @@ class ViewTest(TestCase):
         self.__check_status_code(response)
         self.__check_template_used(response, 'analyse.html')
         # GET request for results, non-existing request_id
-        request_id = '2013-01-01_12-00-00_'
-        response = self.browser.get(reverse('results', args=[request_id, 1]))
+        request_id, page = '2013-01-01_12-00-00_', 1
+        response = self.browser.get(self.__result_url(request_id, page))
         self.__check_status_code(response, 404)
         self.__check_template_used(response, '404.html')
         # GET request for results, existing request_id
@@ -120,17 +138,16 @@ class ViewTest(TestCase):
                     '<polarity>0</polarity>\n' \
                     '</entity>\n' \
                     '</opinion>\n')
-        response = self.browser.get(reverse('results', args=[request_id, 1]))
+        response = self.browser.get(self.__result_url(request_id, page))
         self.__check_status_code(response)
         self.__check_template_used(response, 'analyse.html')
         # GET request for results, existing request_id, page out-of-range
-        response = self.browser.get(
-            reverse('results', args=[request_id, 100]))
-        self.assertRedirects(response, '{0}{1}/1/'.format(
-                self.analyse_url, request_id))
+        page = 100
+        response = self.browser.get(self.__result_url(request_id, page))
+        self.assertRedirects(response, self.__result_url(request_id, page=1))
         # GET request for results, existing request_id, invalid page value
-        response = self.browser.get('{0}{1}/foo/'.format(
-                self.analyse_url, request_id))
+        page = 'foo'
+        response = self.browser.get(self.__result_url(request_id, page))
         self.__check_status_code(response, 404)
         self.__check_template_used(response, '404.html')
         shutil.rmtree(folder)
