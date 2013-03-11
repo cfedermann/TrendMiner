@@ -47,7 +47,7 @@ def validate_mime_type(uploaded_file):
     appropriate for the file's extension.
     """
     subproc = subprocess.Popen(
-        'file --mime-type {}'.format(get_tmp_path( uploaded_file.name)),
+        'file --mime-type {}'.format(get_tmp_path(uploaded_file.name)),
         shell=True, stdout=subprocess.PIPE)
     mime_type = subproc.stdout.read().strip().split(': ')[-1]
     file_extension = get_file_ext(uploaded_file.name)
