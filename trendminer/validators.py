@@ -13,18 +13,17 @@ from zipfile import ZipFile
 
 from django.core.exceptions import ValidationError
 
-from settings import MAX_UPLOAD_SIZE, SCHEMA_PATH, XML_MIME_TYPES
-from settings import ZIP_MIME_TYPES
+from settings import ACCEPTED_FILE_TYPES, MAX_UPLOAD_SIZE, SCHEMA_PATH
+from settings import XML_MIME_TYPES, ZIP_MIME_TYPES
 from trendminer import UploadFormErrors
 from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
 
 def validate_extension(uploaded_file):
     """
-    Check if extension of uploaded file is one of {'.xml', '.zip'}.
+    Check if extension of uploaded file is listed in `ACCEPTED_FILE_TYPES`.
     """
-    if not (uploaded_file.name.lower().endswith('zip') or
-            uploaded_file.name.lower().endswith('xml')):
+    if not get_file_ext(uploaded_file.name.lower()) in ACCEPTED_FILE_TYPES:
         raise ValidationError(UploadFormErrors.EXTENSION)
 
 def validate_size(uploaded_file):
