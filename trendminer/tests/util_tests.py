@@ -10,11 +10,10 @@ import shutil
 import tempfile
 import zipfile
 
-from tempfile import gettempdir
 from django.core.files import File
 from django.test import TestCase
 
-from settings import URL_PREFIX
+from settings import URL_PREFIX, TMP_PATH
 from utils import add_timestamp_prefix, extract_archive
 from utils import get_file_ext, get_tmp_path, prefix_url, remove_upload
 from utils import sanitize_file_name, starts_with_timestamp, store_upload
@@ -40,7 +39,7 @@ class UtilTest(TestCase):
         Specify upload directory, generic file name and file prefix to
         be used by different tests belonging to this class.
         """
-        cls.upload_dir = gettempdir()
+        cls.upload_dir = TMP_PATH
         cls.file_name = 'test.txt'
         cls.file_prefix = '2013-01-01_12-00-00_'
 
