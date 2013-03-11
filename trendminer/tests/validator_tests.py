@@ -64,11 +64,11 @@ class ValidatorTest(TestCase):
         cls.__delete_uploaded_files()
 
     @classmethod
-    def __delete_uploaded_files(self):
+    def __delete_uploaded_files(cls):
         """
         Delete files uploaded by individual tests.
         """
-        for upload in self.uploaded_files:
+        for upload in cls.uploaded_files:
             remove_upload(upload)
 
     def setUp(self):
