@@ -22,6 +22,9 @@ from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
 
 def home(request):
+    """
+    Render home view.
+    """
     dictionary = {
       'title': 'TrendMiner Web Services',
       'commit_tag': COMMIT_TAG,
@@ -33,6 +36,9 @@ def home(request):
 def login(request, template_name):
     """
     Renders login view by connecting to django.contrib.auth.views.
+
+    If user is already logged in, render home view instead, informing
+    them about the fact that they are already logged in.
     """
     if request.user.username:
         dictionary = {
@@ -57,6 +63,9 @@ def logout(request, next_page):
 
 @login_required
 def analyse(request, request_id=None, page=None):
+    """
+    Render view for uploading data and presenting analysis results.
+    """
     if request.method == 'POST':
         form = UploadForm(request.POST, request.FILES)
         if form.is_valid():
@@ -101,6 +110,9 @@ def analyse(request, request_id=None, page=None):
 @archive_extracted
 @file_on_disk
 def _analyse(data):
+    """
+    Run TrendMiner on user uploaded data.
+    """
     file_type = get_file_ext(data.name)
     if file_type == '.zip':
         command = 'perl -I {0} {1}'.format(
@@ -114,6 +126,10 @@ def _analyse(data):
 
 
 def parse_results(request_id):
+    """
+    Read TrendMiner results for a specific request from corresponding
+    XML output file and store them in a dictionary.
+    """
     result = open(get_tmp_path(request_id, 'om.xml')).read()
     result_tree = ElementTree.fromstring(result)
     entities = sorted([

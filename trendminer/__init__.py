@@ -7,6 +7,18 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 from settings import ACCEPTED_FILE_TYPES, MAX_UPLOAD_SIZE
 
 class UploadFormErrors(object):
+    """
+    This class defines error messages for different types of errors
+    that may occur when uploading data to TrendMiner for analysis.
+
+    Before accepting user submitted data and passing it to TrendMiner
+    for analysis, a series of checks is performed to ensure that the
+    data conforms to the format TrendMiner expects. The validator
+    functions responsible for performing these checks live in
+    `validators.py`; depending on the type(s) of error(s) detected,
+    they use the error messages defined in this class to notify the
+    user why the upload failed.
+    """
     EXTENSION = 'Upload must be in {} format.'.format(
         ' or '.join(ACCEPTED_FILE_TYPES))
     SIZE = 'Upload too large. The current limit is {}MB.'.format(
