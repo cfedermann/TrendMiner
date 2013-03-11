@@ -161,7 +161,8 @@ def validate_against_schema(uploaded_file):
                 subproc = subprocess.Popen(command)
                 returncode = subproc.wait()
                 if not returncode == 0:
-                    raise ValidationError(UploadFormErrors.FILES_SCHEMA_CONFORMITY)
+                    raise ValidationError(
+                        UploadFormErrors.FILES_SCHEMA_CONFORMITY)
     elif file_type == '.xml':
         command = shlex.split(
             'xmllint --noout --schema "{0}" "{1}"'.format(
