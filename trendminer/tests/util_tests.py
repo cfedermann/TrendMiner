@@ -14,9 +14,10 @@ from tempfile import gettempdir
 from django.core.files import File
 from django.test import TestCase
 
-from utils import add_timestamp_prefix, extract_archive, get_file_ext
-from utils import get_tmp_path, remove_upload, sanitize_file_name
-from utils import starts_with_timestamp, store_upload
+from settings import URL_PREFIX
+from utils import add_timestamp_prefix, extract_archive
+from utils import get_file_ext, get_tmp_path, prefix_url, remove_upload
+from utils import sanitize_file_name, starts_with_timestamp, store_upload
 
 
 class UtilTest(TestCase):
@@ -50,6 +51,21 @@ class UtilTest(TestCase):
         os.chdir(os.path.dirname(self.upload_dir))
         zip_file.close()
         return name
+
+    def test_prefix_url(self):
+        bare_prefix = URL_PREFIX.strip('/')
+        url = prefix_url('')
+        self.assertEquals(url, '/{}/'.format(bare_prefix))
+        url = prefix_url('/')
+        self.assertEquals(url, '/{}/'.format(bare_prefix))
+        url = prefix_url('foo')
+        self.assertEquals(url, '/{}/foo/'.format(bare_prefix))
+        url = prefix_url('/foo')
+        self.assertEquals(url, '/{}/foo/'.format(bare_prefix))
+        url = prefix_url('foo/')
+        self.assertEquals(url, '/{}/foo/'.format(bare_prefix))
+        url = prefix_url('/foo/')
+        self.assertEquals(url, '/{}/foo/'.format(bare_prefix))
 
     def test_sanitize_file_name(self):
         file_name = sanitize_file_name('Test (a) [b].txt')

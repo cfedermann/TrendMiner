@@ -10,6 +10,7 @@ import tempfile
 import zipfile
 
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
 
@@ -24,6 +25,7 @@ class ValidatorTest(TestCase):
         cls.testdir = tempfile.mkdtemp(suffix='.test', dir=ROOT_PATH)
         cls.file_prefix = add_timestamp_prefix('')
         cls.uploaded_files = []
+        cls.analyse_url = reverse('analyse')
 
     @classmethod
     def tearDownClass(cls):
@@ -74,7 +76,7 @@ class ValidatorTest(TestCase):
 
     def __check_form_errors(self, file_name, expected_errors):
         with self.__open_test_file(file_name) as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
+            response = self.browser.post(self.analyse_url, {'data': testfile})
             self.assertFormError(
                 response, form='form', field='data', errors=expected_errors)
         self.uploaded_files.append(os.path.basename(file_name))
@@ -158,13 +160,13 @@ class ValidatorTest(TestCase):
                 '</item>')
         with self.__open_test_file(
             os.path.join(self.testdir, test_file)) as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
+            response = self.browser.post(self.analyse_url, {'data': testfile})
             self.assertContains(response, 'Success!')
         self.uploaded_files.append(test_file)
         test_zip = self.__create_test_zip(
             self.file_prefix+'schema-conforming-xml.zip', test_file)
         with self.__open_test_file(
             os.path.join(self.testdir, test_zip)) as testfile:
-            response = self.browser.post('/analyse/', {'data': testfile})
+            response = self.browser.post(self.analyse_url, {'data': testfile})
             self.assertContains(response, 'Success!')
         self.uploaded_files.append(test_zip)

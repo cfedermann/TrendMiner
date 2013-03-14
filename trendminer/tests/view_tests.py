@@ -10,6 +10,7 @@ import shutil
 from tempfile import gettempdir
 
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 from django.test.client import Client
 
@@ -17,6 +18,13 @@ from settings import COMMIT_TAG
 
 class ViewTest(TestCase):
     urls = 'trendminer.urls'
+
+    @classmethod
+    def setUpClass(cls):
+        cls.home_url = reverse('home')
+        cls.login_url = reverse('trendminer.views.login')
+        cls.logout_url = reverse('trendminer.views.logout')
+        cls.analyse_url = reverse('analyse')
 
     def setUp(self):
         self.browser = Client()
@@ -34,19 +42,19 @@ class ViewTest(TestCase):
         self.assertEquals(value, expected_value)
 
     def test_home_view(self):
-        response = self.browser.get('/')
+        response = self.browser.get(self.home_url)
         self.__check_status_code(response)
         self.__check_template_used(response, 'home.html')
         self.__check_context_var(response, 'title', 'TrendMiner Web Services')
         self.__check_context_var(response, 'commit_tag', COMMIT_TAG)
 
     def test_login_view(self):
-        response = self.browser.get('/login/')
+        response = self.browser.get(self.login_url)
         self.__check_status_code(response)
         self.__check_template_used(response, 'login.html')
         self.__check_context_var(response, 'commit_tag', COMMIT_TAG)
         response = self.browser.post(
-            '/login/',
+            self.login_url,
             {'username': self.user.username, 'password': 'trendminer-demo'},
             follow=True)
         self.__check_status_code(response)
@@ -54,7 +62,7 @@ class ViewTest(TestCase):
         username = response.context['user'].username
         self.assertEquals(username, 'trendminer-demo')
         response = self.browser.post(
-            '/login/',
+            self.login_url,
             {'username': self.user.username, 'password': 'trendminer-demo'},
             follow=True)
         self.__check_status_code(response)
@@ -66,26 +74,27 @@ class ViewTest(TestCase):
             'You are already logged in as <code>"trendminer-demo"</code>.')
 
     def test_logout_view(self):
-        response = self.browser.get('/logout/')
-        self.assertRedirects(response, '/')
+        response = self.browser.get(self.logout_url)
+        self.assertRedirects(response, self.home_url)
         self.browser.login(
             username=self.user.username, password='trendminer-demo')
-        response = self.browser.get('/logout/')
-        self.assertRedirects(response, '/')
+        response = self.browser.get(self.logout_url)
+        self.assertRedirects(response, self.home_url)
 
     def test_analyse_view(self):
         # GET request, not logged in
-        response = self.browser.get('/analyse/')
-        self.assertRedirects(response, '/login/?next=/analyse/')
+        response = self.browser.get(self.analyse_url)
+        self.assertRedirects(response, '{0}?next={1}'.format(
+                self.login_url, self.analyse_url))
         # GET request, logged in
         self.browser.login(
             username=self.user.username, password='trendminer-demo')
-        response = self.browser.get('/analyse/')
+        response = self.browser.get(self.analyse_url)
         self.__check_status_code(response)
         self.__check_template_used(response, 'analyse.html')
         # GET request for results, non-existing request_id
         request_id = '2013-01-01_12-00-00_'
-        response = self.browser.get('/analyse/{0}/1/'.format(request_id))
+        response = self.browser.get(reverse('results', args=[request_id, 1]))
         self.__check_status_code(response, 404)
         self.__check_template_used(response, '404.html')
         # GET request for results, existing request_id
@@ -111,14 +120,17 @@ class ViewTest(TestCase):
                     '<polarity>0</polarity>\n' \
                     '</entity>\n' \
                     '</opinion>\n')
-        response = self.browser.get('/analyse/{0}/1/'.format(request_id))
+        response = self.browser.get(reverse('results', args=[request_id, 1]))
         self.__check_status_code(response)
         self.__check_template_used(response, 'analyse.html')
         # GET request for results, existing request_id, page out-of-range
-        response = self.browser.get('/analyse/{0}/100/'.format(request_id))
-        self.assertRedirects(response, '/analyse/{0}/1/'.format(request_id))
+        response = self.browser.get(
+            reverse('results', args=[request_id, 100]))
+        self.assertRedirects(response, '{0}{1}/1/'.format(
+                self.analyse_url, request_id))
         # GET request for results, existing request_id, invalid page value
-        response = self.browser.get('/analyse/{0}/foo/'.format(request_id))
+        response = self.browser.get('{0}{1}/foo/'.format(
+                self.analyse_url, request_id))
         self.__check_status_code(response, 404)
         self.__check_template_used(response, '404.html')
         shutil.rmtree(folder)
