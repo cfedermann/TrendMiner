@@ -14,7 +14,7 @@ from os import path
 from zipfile import ZipFile
 from zipfile import error as BadZipFile
 
-from settings import ACCEPTED_FILE_TYPES, TMP_PATH, URL_PREFIX
+from trendminer.settings import ACCEPTED_FILE_TYPES, TMP_PATH, URL_PREFIX
 
 
 def prefix_url(url):
@@ -31,7 +31,7 @@ def sanitize_file_name(name):
     Lowercase file name; replace spaces with underscores and remove
     parentheses and square brackets.
     """
-    return re.sub('[\(\)\[\]]', '', name.lower().replace(' ', '_'))
+    return re.sub(r'[\(\)\[\]]', '', name.lower().replace(' ', '_'))
 
 def add_timestamp_prefix(file_name):
     """
@@ -51,7 +51,7 @@ def starts_with_timestamp(file_name):
     Check if file name starts with timestamp of the form
     `YYYY-MM-DD_hh-mm-ss_`.
     """
-    return re.match('\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}_', file_name)
+    return re.match(r'\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}_', file_name)
 
 def get_tmp_path(*args):
     """
@@ -89,15 +89,15 @@ def remove_upload(file_name):
             if os.path.exists(output_folder):
                 shutil.rmtree(output_folder)
 
-def store_upload(uploaded_file, path):
+def store_upload(uploaded_file, target_path):
     """
-    Write uploaded file to destination supplied in the `path`
+    Write uploaded file to destination supplied in the `target_path`
     parameter.
 
     The uploaded file needs to be of type `django.core.files.File` or
     `django.core.files.uploadedfile.UploadedFile`.
     """
-    with open(path, 'w') as destination:
+    with open(target_path, 'w') as destination:
         for chunk in uploaded_file.chunks():
             destination.write(chunk)
 
