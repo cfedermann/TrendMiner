@@ -12,7 +12,6 @@ from settings import HOME_URL, URL_PREFIX
 # admin.autodiscover()
 
 app_patterns = patterns('',
-    # Examples:
     url(r'^$', 'trendminer.views.home', name='home'),
 
     (r'^login/$', 'trendminer.views.login',
@@ -25,8 +24,6 @@ app_patterns = patterns('',
     url(r'^analyse/(?P<request_id>\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}_.*)' \
             '/(?P<page>[1-9]\d*)/$',
         'trendminer.views.analyse', name='results'),
-
-    # url(r'^trendminer/', include('trendminer.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

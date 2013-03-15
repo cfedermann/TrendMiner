@@ -13,25 +13,40 @@ from zipfile import ZipFile
 
 from django.core.exceptions import ValidationError
 
-from settings import MAX_UPLOAD_SIZE, SCHEMA_PATH, XML_MIME_TYPES
-from settings import ZIP_MIME_TYPES
+from settings import ACCEPTED_FILE_TYPES, MAX_UPLOAD_SIZE, SCHEMA_PATH
+from settings import XML_MIME_TYPES, ZIP_MIME_TYPES
 from trendminer import UploadFormErrors
 from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
 
 
 def validate_extension(uploaded_file):
-    if not (uploaded_file.name.lower().endswith('zip') or
-            uploaded_file.name.lower().endswith('xml')):
+    """
+    Check if extension of uploaded file is listed in `ACCEPTED_FILE_TYPES`.
+    """
+    if not get_file_ext(uploaded_file.name.lower()) in ACCEPTED_FILE_TYPES:
         raise ValidationError(UploadFormErrors.EXTENSION)
 
 def validate_size(uploaded_file):
+    """
+    Check if size of uploaded file exceeds maximum file size for
+    uploads as defined by the `MAX_UPLOAD_SIZE` setting.
+    """
     if uploaded_file.size > MAX_UPLOAD_SIZE:
         raise ValidationError(UploadFormErrors.SIZE)
 
 @file_on_disk
 def validate_mime_type(uploaded_file):
+    """
+    Check MIME type of uploaded file and make sure it corresponds to
+    the file's extension.
+
+    This function uses the UNIX `file` command with the `--mime-type`
+    option to obtain the MIME type of the uploaded file. It then
+    checks to see if the MIME type corresponds to one of the types
+    appropriate for the file's extension.
+    """
     subproc = subprocess.Popen(
-        'file --mime-type {}'.format(get_tmp_path( uploaded_file.name)),
+        'file --mime-type {}'.format(get_tmp_path(uploaded_file.name)),
         shell=True, stdout=subprocess.PIPE)
     mime_type = subproc.stdout.read().strip().split(': ')[-1]
     file_extension = get_file_ext(uploaded_file.name)
@@ -44,6 +59,20 @@ def validate_mime_type(uploaded_file):
 
 @file_on_disk
 def validate_zip_integrity(uploaded_file):
+    """
+    If uploaded file is a .zip archive, check its integrity and the
+    integrity of the files it contains.
+
+    In case of a corrupted archive the `ZipFile` constructor raises
+    IOError. To check the integrity of the files contained in the
+    archive, the `ZipFile.testzip()` function is used.
+
+    If the uploaded file appears to be a .zip archive (because its
+    extension is `.zip`), but actually isn't, the `ZipFile`
+    constructor raises `BadZipFile`. Because this case is covered by
+    the MIME type validator, the function does not raise a
+    ValidationError in this case.
+    """
     if uploaded_file.name.endswith('zip'):
         corrupted_file = None
         try:
@@ -58,6 +87,14 @@ def validate_zip_integrity(uploaded_file):
 
 @file_on_disk
 def validate_zip_contents(uploaded_file):
+    """
+    If uploaded file is a .zip archive, check if all of the files it
+    contains are XML files.
+
+    This function examines the extension of each file in the .zip
+    archive to determine if it is an XML file. As of right now, it
+    does not check MIME types.
+    """
     contents = []
     if uploaded_file.name.endswith('zip'):
         try:
@@ -71,6 +108,16 @@ def validate_zip_contents(uploaded_file):
 @archive_extracted
 @file_on_disk
 def validate_xml_well_formedness(uploaded_file):
+    """
+    Check if XML files that are part of a single upload are
+    well-formed.
+
+    This function uses the `xmlwf` tool to determine if a given XML
+    file is well-formed. The tool does not use standard return codes
+    for representing the outcome of the check. Instead, if a file is
+    well-formed, it simply outputs nothing. If it's not, xmlwf writes
+    a description of the problem to standard output.
+    """
     file_type = get_file_ext(uploaded_file.name)
     if file_type == '.zip' and uploaded_file.folder:
         for file_name in listdir(get_tmp_path(uploaded_file.folder)):
@@ -93,6 +140,15 @@ def validate_xml_well_formedness(uploaded_file):
 @archive_extracted
 @file_on_disk
 def validate_against_schema(uploaded_file):
+    """
+    Check if XML files that are part of a single upload validate
+    against the TrendMiner XML schema.
+
+    This function uses the `xmllint` tool to check if a given XML file
+    conforms to the TrendMiner XML schema. The schema is defined in
+    `<project-dir>/trendminer.xsd`. For any file that validates
+    against the schema, the xmllint tool returns 0.
+    """
     file_type = get_file_ext(uploaded_file.name)
     if file_type == '.zip' and uploaded_file.folder:
         for file_name in listdir(get_tmp_path(uploaded_file.folder)):
@@ -104,7 +160,8 @@ def validate_against_schema(uploaded_file):
                 subproc = subprocess.Popen(command)
                 returncode = subproc.wait()
                 if not returncode == 0:
-                    raise ValidationError(UploadFormErrors.FILES_SCHEMA_CONFORMITY)
+                    raise ValidationError(
+                        UploadFormErrors.FILES_SCHEMA_CONFORMITY)
     elif file_type == '.xml':
         command = shlex.split(
             'xmllint --noout --schema "{0}" "{1}"'.format(

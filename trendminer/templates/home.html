@@ -3,6 +3,7 @@
 {% block content %}
 {% if message %}
   <div class="alert alert-error">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
     <strong>Please note:</strong> {{message|safe}}
   </div>
 {% endif %}
@@ -10,20 +11,43 @@
   <!-- Main hero unit for a primary marketing message or call to action -->
   <div class="hero-unit">
     <h1>TrendMiner Showcase</h1>
-    <p>This is a showcase that demonstrates web services developed as part of the TrendMiner project.</p>
+    <p>
+      This is a showcase that demonstrates web services developed as
+      part of the TrendMiner project.
+    </p>
 
-    <p><a href="{% url trendminer.views.analyse %}" class="btn btn-primary btn-large">Access analysis dashboard &raquo;</a></p>
+    <p>
+      <a href="{% url trendminer.views.analyse %}" class="btn btn-primary btn-large">
+        Access analysis dashboard &raquo;
+      </a>
+    </p>
   </div>
 
   <div class="container">
     <div class="span11">
       <h2>About TrendMiner</h2>
-      <p><img src="https://raw.github.com/cfedermann/TrendMiner/master/trendminer-logo-final.png" style="float:right; width:200px; padding-left: 20px;" /> The goal of the <a href="http://www.trendminer-project.eu/">TrendMiner</a> project is to deliver innovative, portable open-source real-time methods for cross-lingual mining and summarisation of large-scale stream media, focusing on two use cases in the fields of sentiments detection in finance and politics. TrendMiner implements for this an inter-disciplinary approach, combining deep linguistic methods from text processing, knowledge-based reasoning from web science, machine learning, economics, and political science.</p>
+      <p>
+        <img src="https://raw.github.com/cfedermann/TrendMiner/master/trendminer-logo-final.png"
+             style="float:right; width:200px; padding-left: 20px;" />
+        The goal of the <a href="http://www.trendminer-project.eu/">TrendMiner</a>
+        project is to deliver innovative, portable open-source
+        real-time methods for cross-lingual mining and summarisation
+        of large-scale stream media, focusing on two use cases in the
+        fields of sentiment detection in finance and politics.
+        TrendMiner implements for this an inter-disciplinary approach,
+        combining deep linguistic methods from text processing,
+        knowledge-based reasoning from web science, machine learning,
+        economics, and political science.
+      </p>
     </div>
   </div>
 
 {% endblock %}
 
 {% block footer %}
-<a href="http://www.trendminer-project.eu/">TrendMiner</a> is a Research & Development project co-funded by the European Commission, under contract nr. 287863. <img src="http://www.dfki.de/~cfedermann/eu-logo.png" /> <img src="http://www.dfki.de/~cfedermann/fp7-logo.png" />
+  <a href="http://www.trendminer-project.eu/">TrendMiner</a> is a
+  Research & Development project co-funded by the European Commission,
+  under contract nr. 287863.
+  <img src="http://www.dfki.de/~cfedermann/eu-logo.png" />
+  <img src="http://www.dfki.de/~cfedermann/fp7-logo.png" />
 {% endblock %}
