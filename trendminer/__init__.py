@@ -4,6 +4,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
          Tim Krones <t.krones@coli.uni-saarland.de>
 """
 
+# pylint: disable-msg=W0403
 from settings import ACCEPTED_FILE_TYPES, MAX_UPLOAD_SIZE
 
 class UploadFormErrors(object):
