@@ -13,10 +13,11 @@ from zipfile import ZipFile
 
 from django.core.exceptions import ValidationError
 
-from settings import ACCEPTED_FILE_TYPES, MAX_UPLOAD_SIZE, SCHEMA_PATH
-from settings import XML_MIME_TYPES, ZIP_MIME_TYPES
+from trendminer.settings import ACCEPTED_FILE_TYPES, MAX_UPLOAD_SIZE
+from trendminer.settings import SCHEMA_PATH, XML_MIME_TYPES, ZIP_MIME_TYPES
 from trendminer import UploadFormErrors
-from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
+from trendminer.utils import archive_extracted, file_on_disk, get_file_ext
+from trendminer.utils import get_tmp_path
 
 
 def validate_extension(uploaded_file):
@@ -45,6 +46,7 @@ def validate_mime_type(uploaded_file):
     checks to see if the MIME type corresponds to one of the types
     appropriate for the file's extension.
     """
+    # pylint: disable-msg=E1101
     subproc = subprocess.Popen(
         'file --mime-type {}'.format(get_tmp_path(uploaded_file.name)),
         shell=True, stdout=subprocess.PIPE)
@@ -118,6 +120,7 @@ def validate_xml_well_formedness(uploaded_file):
     well-formed, it simply outputs nothing. If it's not, xmlwf writes
     a description of the problem to standard output.
     """
+    # pylint: disable-msg=E1101
     file_type = get_file_ext(uploaded_file.name)
     if file_type == '.zip' and uploaded_file.folder:
         for file_name in listdir(get_tmp_path(uploaded_file.folder)):
@@ -149,6 +152,7 @@ def validate_against_schema(uploaded_file):
     `<project-dir>/trendminer.xsd`. For any file that validates
     against the schema, the xmllint tool returns 0.
     """
+    # pylint: disable-msg=E1101
     file_type = get_file_ext(uploaded_file.name)
     if file_type == '.zip' and uploaded_file.folder:
         for file_name in listdir(get_tmp_path(uploaded_file.folder)):
