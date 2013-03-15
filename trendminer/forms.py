@@ -5,12 +5,14 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from django import forms
 
-from utils import sanitize_file_name
-from validators import validate_extension, validate_size
-from validators import validate_mime_type, validate_zip_integrity
-from validators import validate_zip_contents, validate_xml_well_formedness
-from validators import validate_against_schema
+from trendminer.utils import sanitize_file_name
+from trendminer.validators import validate_extension, validate_size
+from trendminer.validators import validate_mime_type, validate_zip_integrity
+from trendminer.validators import validate_zip_contents
+from trendminer.validators import validate_xml_well_formedness
+from trendminer.validators import validate_against_schema
 
+# pylint: disable-msg=R0924
 class UploadForm(forms.Form):
     """
     This class defines the form for uploading user data to Trendminer
