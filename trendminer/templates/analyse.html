@@ -10,48 +10,53 @@
 
   <form class="form-horizontal" enctype="multipart/form-data" method="post" action="{% url trendminer.views.analyse %}">
     {% csrf_token %}
+
     <fieldset class="form-horizontal">
 
-      {% if message %}
-	{% if message == "Success!" %}
-	  <div class="control-group success">
-	{% else %}
-	  <div class="control-group error">
-	{% endif %}
-	    <label class="control-label" for="{{form.data.auto_id}}">
-	      {{form.data.label}}
-	    </label>
-	    <div class="controls">
-	      {{form.data}}
-	      <span class="help-inline">{{ message }}</span>
-	    </div>
-	  </div>
-      {% else %}
 	<div class="control-group">
 	  <label class="control-label" for="{{form.data.auto_id}}">
-	    {{form.data.label}}
+	    {{ form.data.label }}
 	  </label>
 	  <div class="controls">
-	    {{form.data}}
-	    <span class="help-inline"></span>
+	    {{ form.data }}
+	    <span class="help-inline file-field"></span>
 	  </div>
 	</div>
+
+      {% if message %}
+        {% if message == "Success!" %}
+          <div class="alert alert-block alert-success">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <h4>Success!</h4>
+            <p>Browse your results below.</p>
+        {% else %}
+          <div class="alert alert-block alert-error">
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <h4>Error:</h4>
+            {{ message }}
+        {% endif %}
+          </div>
       {% endif %}
 
       <div class="form-actions">
 	<button type="submit" class="btn btn-primary">Upload</button>
         <span class="help-inline">
           <small>
-            Click <a class="btn btn-mini" href="{{ STATIC_URL }}xsd/trendminer.xsd">here</a> for an XSD schema describing the data format TrendMiner expects.
+            Click <a class="btn btn-mini" href="{{ STATIC_URL }}xsd/trendminer.xsd">here</a>
+            for an XSD schema describing the data format TrendMiner expects.
           </small>
         </span>
       </div>
+
     </fieldset>
+
   </form>
 
   {% if entities %}
     <fieldset>
+
       <legend>Your Results</legend>
+
       <table id="results" class="table table-striped table-hover tablesorter">
 	<thead>
           <tr>
@@ -87,7 +92,9 @@
       <div class="pagination pagination-centered">
         <span class="step-links">
           {% if entities.has_previous %}
-            <a class="btn btn-large" href="{% url results rid entities.previous_page_number %}">Previous</a>
+            <a class="btn btn-large" href="{% url results rid entities.previous_page_number %}">
+              Previous
+            </a>
           {% endif %}
 
           <span class="muted">
@@ -95,7 +102,9 @@
           </span>
 
           {% if entities.has_next %}
-            <a class="btn btn-large" href="{% url results rid entities.next_page_number %}">Next</a>
+            <a class="btn btn-large" href="{% url results rid entities.next_page_number %}">
+              Next
+            </a>
           {% endif %}
         </span>
       </div>
@@ -118,14 +127,14 @@
           if ($('div.control-group').hasClass('info')) {
             $('div.control-group').removeClass('info');
           }
-          $('span.help-inline').text('File is too large. The current limit is ' + {{ max_upload_size }} + 'MB.');
+          $('span.help-inline.file-field').text('File is too large. The current limit is ' + {{ max_upload_size }} + 'MB.');
           $('div.control-group').addClass('error');
           $('button.btn').attr('disabled', 'disabled');
         }
         else {
           if ($('div.control-group').hasClass('error')) {
             $('div.control-group').removeClass('error');
-            $('span.help-inline').text('File size is within limits.');
+            $('span.help-inline.file-field').text('File size is within limits.');
             $('div.control-group').addClass('info');
             $('button.btn').removeAttr('disabled');
           }
