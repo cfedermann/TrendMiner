@@ -31,7 +31,7 @@ try:
 except Exception, e:
     COMMIT_TAG = None
 
-from utils import prefix_url
+from trendminer.utils import prefix_url
 
 HOME_URL = prefix_url('/')
 LOGIN_URL = prefix_url('/login/')
