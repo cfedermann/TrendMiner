@@ -16,9 +16,11 @@ from django.http import Http404
 from django.shortcuts import redirect, render, render_to_response
 from django.template import RequestContext
 
-from settings import COMMIT_TAG, ENTITIES_PER_PAGE, MAX_UPLOAD_SIZE, PERL_PATH
-from forms import UploadForm
-from utils import archive_extracted, file_on_disk, get_file_ext, get_tmp_path
+from trendminer.settings import COMMIT_TAG, ENTITIES_PER_PAGE
+from trendminer.settings import MAX_UPLOAD_SIZE, PERL_PATH
+from trendminer.forms import UploadForm
+from trendminer.utils import archive_extracted, file_on_disk, get_file_ext
+from trendminer.utils import get_tmp_path
 
 
 def home(request):
