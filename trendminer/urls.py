@@ -5,7 +5,7 @@ Authors: Christian Federmann <cfedermann@dfki.de>,
 """
 from django.conf.urls.defaults import include, patterns, url
 
-from settings import HOME_URL, URL_PREFIX
+from trendminer.settings import HOME_URL, URL_PREFIX
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
@@ -22,8 +22,7 @@ app_patterns = patterns('',
 
     url(r'^analyse/$', 'trendminer.views.analyse', name='analyse'),
     url(r'^analyse/(?P<request_id>\d{4}(-\d{2}){2}_(\d{2}-){2}\d{2}_.*)' \
-            '/(?P<page>[1-9]\d*)/$',
-        'trendminer.views.analyse', name='results'),
+      r'/(?P<page>[1-9]\d*)/$', 'trendminer.views.analyse', name='results'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
