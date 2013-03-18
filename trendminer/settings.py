@@ -1,6 +1,6 @@
 """
 Project: TrendMiner Demo Web Services
-Authors: Christian Federmann <cfedermann@dfki.de>,
+Authors: Christian Federmann <cfedermann@gmail.com>,
          Tim Krones <t.krones@coli.uni-saarland.de>
 """
 from os import getcwd, path
